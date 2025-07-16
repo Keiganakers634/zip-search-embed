@@ -581,7 +581,12 @@
       const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
       const url = `https://api.followupboss.com/v1/people/${window.contextPersonId}?mergeTags=false`;
 
-      const payload = { assignedUserId: userId };
+	  const payload = {
+	    assignedUserId: userId,
+	    customLastAssignedAgent: userName,
+	    customLastAssignedAgentDate: new Date().toISOString(),
+	    customLastAssigningUser: window.contextUserName
+	  };
 
       try {
         const res = await fetch(url, {
@@ -714,7 +719,12 @@
       const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
       const url = `https://api.followupboss.com/v1/people/${window.contextPersonId}?mergeTags=false`;
     
-      const payload = { assignedUserId: agent.id };
+	  const payload = {
+	    assignedUserId: agent.id,
+	    customLastAssignedAgent: agent.name,
+	    customLastAssignedAgentDate: new Date().toISOString(),
+	    customLastAssigningUser: window.contextUserName
+  	  };
     
       try {
         const res = await fetch(url, {
