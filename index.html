@@ -885,7 +885,8 @@
 	}
 
 	function renderTimeSlots(date) {
-	  showView("timeSlotsContainer");
+	  document.getElementById("calendarContainer").classList.add("hidden");
+	  document.getElementById("timeSlotsContainer").classList.remove("hidden");
 
 	  const container = document.getElementById("timeSlotsContainer");
 	  container.innerHTML = `
