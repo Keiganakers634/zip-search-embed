@@ -348,28 +348,45 @@
 
 	function showView(viewId) {
 	  if (!window.isAuthorized && viewId !== "menuButtons") {
-	    alert("You are not authorized to access this tool.");
-	    return;
+		alert("You are not authorized to access this tool.");
+		return;
 	  }
-	
-	  if (activeView) {
-	    activeView.classList.remove("active");
-	  }
+
+	  // Hide all top-level views
+	  document.querySelectorAll(".view").forEach(v => {
+		v.classList.remove("active");
+	  });
+
+	  // Clear all inner sub-views for consistent behavior
+	  [
+		"calendarLoading",
+		"calendarContainer",
+		"timeSlotsContainer",
+		"appointmentFormContainer",
+		"redistributeResult",
+		"agentsLoading",
+		"agentsTableContainer",
+	  ].forEach(id => {
+		const el = document.getElementById(id);
+		if (el) {
+		  el.classList.add("hidden");
+		  if (["agentsTableContainer", "appointmentFormContainer"].includes(id)) {
+			el.innerHTML = "";
+		  }
+		}
+	  });
+
+	  // Show the requested view
 	  const newView = document.getElementById(viewId);
 	  if (newView) {
-	    newView.classList.add("active");
-	    activeView = newView;
+		newView.classList.add("active");
+		activeView = newView;
 	  }
-	
+
 	  document.getElementById("currentUser").style.display =
-	    viewId === "menuButtons" ? "block" : "none";
-	
-	  if (viewId === "redistributeView") {
-	    document.getElementById("calendarLoading").classList.add("hidden");
-	    document.getElementById("calendarContainer").classList.add("hidden");
-	    document.getElementById("timeSlotsContainer").classList.add("hidden");
-	  }
+		viewId === "menuButtons" ? "block" : "none";
 	}
+
 
 
 
@@ -727,6 +744,12 @@
     }
     
     function showRedistributeResult(agent, entry, zip) {
+	  // Ensure calendar views are hidden when showing result
+	  document.getElementById("calendarLoading").classList.add("hidden");
+	  document.getElementById("calendarContainer").classList.add("hidden");
+	  document.getElementById("timeSlotsContainer").classList.add("hidden");
+	  document.getElementById("appointmentFormContainer").classList.add("hidden");
+
       const container = document.getElementById("redistributeResult");
       window.assignedAgentId = agent.id;
     
@@ -759,9 +782,8 @@
     }
 
 	function scheduleAppointment() {
-		document.getElementById("calendarLoading").classList.remove("hidden");
-		document.getElementById("calendarContainer").classList.add("hidden");
-		document.getElementById("timeSlotsContainer").classList.add("hidden");
+		showView("calendarLoading");
+
 		
 		// Call load AFTER setting spinner
 		setTimeout(loadAgentAppointments, 50);
@@ -852,8 +874,7 @@
 	}
 
 	function renderTimeSlots(date) {
-	  document.getElementById("timeSlotsContainer").classList.remove("hidden");
-	  document.getElementById("calendarContainer").classList.add("hidden");
+	  showView("timeSlotsContainer");
 
 	  const container = document.getElementById("timeSlotsContainer");
 	  container.innerHTML = `
@@ -1038,8 +1059,6 @@
 		return;
 	  }
 
-
-
 	  // Load agent photo from API so we can show it
 	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
 	  const url = `https://api.followupboss.com/v1/users/${userId}`;
@@ -1056,6 +1075,12 @@
 
 		window.assignedAgentId = userId;
 		window.assignedAgentName = userName;
+
+		// ✅ Hide all sub-views of the redistribute view so nothing remains visible underneath
+		document.getElementById("calendarLoading").classList.add("hidden");
+		document.getElementById("calendarContainer").classList.add("hidden");
+		document.getElementById("timeSlotsContainer").classList.add("hidden");
+		document.getElementById("appointmentFormContainer").classList.add("hidden");
 
 		const container = document.getElementById("redistributeResult");
 
@@ -1087,7 +1112,7 @@
 		document.getElementById("agentsLoading").classList.add("hidden");
 		document.getElementById("agentsForm").classList.add("hidden");
 
-		// Switch views
+		// Switch views cleanly
 		showView("redistributeView");
 		document.getElementById("redistributeResult").classList.remove("hidden");
 
@@ -1097,6 +1122,7 @@
 		goBack();
 	  }
 	}
+
 
 	function parseBusyWindows(appointments) {
 	  if (!appointments || appointments.length === 0) {
