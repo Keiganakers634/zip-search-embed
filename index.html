@@ -10,16 +10,23 @@
       margin: 20px;
       background: #f9f9f9;
       overflow-x: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     .view {
       position: absolute;
-      top: 20px;
+      top: 10px;
       left: 0;
       width: 100%;
+      height: calc(100vh - 20px);
+      overflow-y: auto;
       transform: translateX(100%);
       opacity: 0;
       transition: transform 0.4s ease, opacity 0.4s ease;
+      padding: 10px;
+      box-sizing: border-box;
     }
 
     .view.active {
@@ -29,11 +36,12 @@
     }
 
     #menuButtons {
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      margin-top: 20px;
+      margin-top: 10px;
     }
 
     #menuButtons .button,
@@ -61,11 +69,49 @@
 
     .back-button {
       display: inline-block;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
       cursor: pointer;
       color: #2563EB;
       font-weight: bold;
+      font-size: 14px;
     }
+
+    #agentsForm {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+    
+    #agentsForm input {
+      margin-top: 8px;
+      padding: 6px;
+      width: 120px;
+    }
+    
+    #agentsForm .button {
+      margin-top: 12px;
+    }
+    
+    .or-divider {
+      width: 100%;
+      text-align: center;
+      border-top: 1px solid #ccc;
+      margin: 15px 0;
+      position: relative;
+    }
+    
+    .or-divider span {
+      background: #f9f9f9;
+      padding: 0 8px;
+      position: relative;
+      top: -11px;
+      color: #666;
+      font-size: 14px;
+    }
+
+
 
     table {
       border-collapse: collapse;
@@ -126,12 +172,15 @@
     <span class="back-button" onclick="goBack()">← Back</span>
     <h2>Available Agents</h2>
 
-    <div id="agentsForm">
-      <label for="zipInput"><strong>Zip Code:</strong></label><br/>
-      <input type="text" id="zipInput" maxlength="5" style="margin-top:5px; padding:5px; width:120px;" />
-      <button class="button" style="margin-top:10px;" onclick="searchAgents()">Search</button><br/>
-      <button class="button" style="margin-top:10px;" onclick="useMostRecentInquiry()">Use Most Recent Inquiry</button>
-    </div>
+  <div id="agentsForm">
+    <label for="zipInput"><strong>Zip Code:</strong></label>
+    <input type="text" id="zipInput" maxlength="5" />
+    <button class="button" onclick="searchAgents()">Search</button>
+  
+    <div class="or-divider"><span>OR</span></div>
+  
+    <button class="button" onclick="useMostRecentInquiry()">Use Most Recent Inquiry</button>
+  </div>
 
     <div id="agentsLoading" class="hidden" style="margin-top:20px;">
       Pulling Agent Details...
