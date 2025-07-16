@@ -116,6 +116,38 @@
     .hidden {
       display: none;
     }
+
+	#calendarContainer, #timeSlotsContainer, #calendarLoading {
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	}
+
+	.calendar-grid {
+	  display: grid;
+	  grid-template-columns: repeat(7, 1fr);
+	  gap: 8px;
+	  margin-top: 20px;
+	}
+
+	.calendar-grid button {
+	  width: 100%;
+	  padding: 10px 5px;
+	  font-size: 14px;
+	}
+
+	.time-grid {
+	  display: grid;
+	  grid-template-columns: repeat(5, 1fr);
+	  gap: 8px;
+	  margin-top: 20px;
+	}
+
+	.time-grid button {
+	  font-size: 13px;
+	  padding: 8px 5px;
+	}
+
   </style>
 
   <script type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
@@ -139,7 +171,13 @@
     <h2>Redistribute</h2>
     <div id="redistributeLoading" class="hidden">Redistributing...</div>
     <div id="redistributeResult" class="hidden"></div>
-    <div id="calendarContainer" class="hidden"></div>
+	<div id="calendarLoading" class="hidden">
+	  <h3 style="text-align:center; margin-top:40px;">
+		Retrieving upcoming Appointment details and generating availability...
+	  </h3>
+	</div>
+
+	<div id="calendarContainer" class="hidden"></div>
     <div id="timeSlotsContainer" class="hidden"></div>
   </div>
 
@@ -321,14 +359,16 @@
     }
 
 
-    function searchAgents() {
-      const zip = document.getElementById("zipInput").value.trim();
-      if (!/^\d{5}$/.test(zip)) {
-        alert("Please enter a valid zip code");
-        return;
-      }
-      findGroupByZip(zip);
-    }
+	function searchAgents() {
+	  const zip = document.getElementById("zipInput").value.trim();
+	  if (!/^\d{5}$/.test(zip)) {
+		alert("Please enter a valid zip code");
+		return;
+	  }
+	  window.lastZipSearch = zip;
+	  findGroupByZip(zip);
+	}
+
 
     async function useMostRecentInquiry() {
       if (!window.contextPersonId) {
@@ -367,10 +407,11 @@
           return;
         }
     
-        const zip = sorted[0].property.code;
-        console.log("Using zip code from recent inquiry:", zip);
-    
-        findGroupByZip(zip);
+		const zip = sorted[0].property.code;
+		console.log("Using zip code from recent inquiry:", zip);
+		window.lastZipSearch = zip;
+		findGroupByZip(zip);
+
     
       } catch (err) {
         alert("Failed to load recent inquiries.");
@@ -484,12 +525,12 @@
 
         const data = await res.json();
 
-        if (data.assignedUserId === userId) {
-          alert("Distributed!");
-          goBack();
-        } else {
-          throw new Error("Response did not confirm assignment.");
-        }
+		if (data.assignedUserId === userId) {
+		  // Instead of just going back, show a result view
+		  showAvailableAgentResult(userId, userName);
+		} else {
+		  throw new Error("Response did not confirm assignment.");
+		}
       } catch (err) {
         alert("That didn't work...Try again, or pick a different agent.");
         console.error(err);
@@ -657,125 +698,208 @@
       container.classList.remove("hidden");
     }
 
-    function scheduleAppointment() {
-      document.getElementById("redistributeResult").classList.add("hidden");
-      document.getElementById("calendarContainer").classList.remove("hidden");
-      loadAgentAppointments();
-    }
-    
-    async function loadAgentAppointments() {
-      if (!window.assignedAgentId) {
-        alert("No assigned agent found for scheduling.");
-        return;
-      }
-    
-      const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
-      const url = `https://api.followupboss.com/v1/appointments?userId=${window.assignedAgentId}&limit=100&offset=0`;
-    
-      try {
-        const res = await fetch(url, {
-          headers: {
-            "accept": "application/json",
-            "authorization": `Basic ${apiKey}`
-          }
-        });
-    
-        if (!res.ok) throw new Error("Appointments API error");
-    
-        const data = await res.json();
-        const appointments = data.appointments || [];
-    
-        window.agentBusyRanges = parseBusyWindows(appointments);
-        renderMiniCalendar();
-    
-      } catch (e) {
-        console.error(e);
-        alert("Failed to load agent appointments.");
-      }
-    }
-    
-    function parseBusyWindows(appts) {
-      const busy = [];
-    
-      const now = new Date();
-      const twoWeeksOut = new Date();
-      twoWeeksOut.setDate(twoWeeksOut.getDate() + 14);
-    
-      for (const a of appts) {
-        const start = new Date(a.start);
-        const end = new Date(a.end);
-    
-        if (end < now || start > twoWeeksOut) continue;
-    
-        const cushionStart = new Date(start.getTime() - 60 * 60 * 1000);
-        const cushionEnd = new Date(end.getTime() + 60 * 60 * 1000);
-    
-        busy.push({ start: cushionStart, end: cushionEnd });
-      }
-    
-      return busy;
-    }
-    
-    function renderMiniCalendar() {
-      const container = document.getElementById("calendarContainer");
-      container.innerHTML = "<h3>Select a Date:</h3>";
-    
-      const today = new Date();
-      for (let i = 0; i < 14; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-    
-        const label = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    
-        const btn = document.createElement("button");
-        btn.textContent = label;
-        btn.className = "button";
-        btn.style.margin = "5px";
-        btn.onclick = () => renderTimeSlots(date);
-    
-        container.appendChild(btn);
-      }
-    }
-    
-    function renderTimeSlots(date) {
-      document.getElementById("timeSlotsContainer").classList.remove("hidden");
-      document.getElementById("calendarContainer").classList.add("hidden");
-    
-      const container = document.getElementById("timeSlotsContainer");
-      container.innerHTML = `<span class="back-button" onclick="goBackToCalendar()">← Back to Calendar</span>`;
-      container.innerHTML += `<h4>${date.toDateString()}</h4>`;
-    
-      for (let hour = 9; hour <= 18; hour++) {
-        const slotStart = new Date(date);
-        slotStart.setHours(hour, 0, 0, 0);
-    
-        const slotEnd = new Date(slotStart);
-        slotEnd.setHours(hour + 1);
-    
-        const isBusy = window.agentBusyRanges.some(busy =>
-          slotStart < busy.end && slotEnd > busy.start
-        );
-    
-        const slotLabel = slotStart.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-    
-        const btn = document.createElement("button");
-        btn.textContent = isBusy ? `${slotLabel} (Busy!)` : slotLabel;
-        btn.className = "button";
-        btn.disabled = isBusy;
-        btn.onclick = () => {
-          if (!isBusy) {
-            alert("Coming Soon!");
-          }
-        };
-    
-        container.appendChild(btn);
-      }
-    }
-    
-    function goBackToCalendar() {
-      document.getElementById("timeSlotsContainer").classList.add("hidden");
-      document.getElementById("calendarContainer").classList.remove("hidden");
-    }
+	function scheduleAppointment() {
+	  document.getElementById("redistributeResult").classList.add("hidden");
+	  document.getElementById("calendarLoading").classList.remove("hidden");
+	  document.getElementById("calendarContainer").classList.add("hidden");
+	  document.getElementById("timeSlotsContainer").classList.add("hidden");
+	  loadAgentAppointments();
+	}
+
+	async function loadAgentAppointments() {
+	  if (!window.assignedAgentId) {
+		alert("No assigned agent found for scheduling.");
+		return;
+	  }
+
+	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+	  const url = `https://api.followupboss.com/v1/appointments?userId=${window.assignedAgentId}&limit=100&offset=0`;
+
+	  try {
+		const res = await fetch(url, {
+		  headers: {
+			"accept": "application/json",
+			"authorization": `Basic ${apiKey}`
+		  }
+		});
+
+		if (!res.ok) throw new Error("Appointments API error");
+
+		const data = await res.json();
+		const appointments = data.appointments || [];
+
+		window.agentBusyRanges = parseBusyWindows(appointments);
+
+		document.getElementById("calendarLoading").classList.add("hidden");
+		document.getElementById("calendarContainer").classList.remove("hidden");
+
+		renderMiniCalendar();
+
+	  } catch (e) {
+		console.error(e);
+		alert("Failed to load agent appointments.");
+		document.getElementById("calendarLoading").classList.add("hidden");
+	  }
+	}
+
+	function renderMiniCalendar() {
+	  const container = document.getElementById("calendarContainer");
+	  container.innerHTML = "<h3>Select a Date:</h3>";
+
+	  const grid = document.createElement("div");
+	  grid.className = "calendar-grid";
+
+	  const today = new Date();
+	  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+	  // Headers
+	  for (const d of dayNames) {
+		const header = document.createElement("div");
+		header.style.fontWeight = "bold";
+		header.style.textAlign = "center";
+		header.textContent = d;
+		grid.appendChild(header);
+	  }
+
+	  // Blank cells if first day isn't Sunday
+	  const firstDate = new Date(today);
+	  const weekday = firstDate.getDay();
+	  for (let i = 0; i < weekday; i++) {
+		grid.appendChild(document.createElement("div"));
+	  }
+
+	  for (let i = 0; i < 14; i++) {
+		const date = new Date(today);
+		date.setDate(today.getDate() + i);
+
+		const label = date.getDate();
+
+		const btn = document.createElement("button");
+		btn.textContent = label;
+		btn.className = "button";
+		btn.style.fontSize = "14px";
+		btn.onclick = () => renderTimeSlots(date);
+
+		grid.appendChild(btn);
+	  }
+
+	  container.appendChild(grid);
+	}
+
+	function renderTimeSlots(date) {
+	  document.getElementById("timeSlotsContainer").classList.remove("hidden");
+	  document.getElementById("calendarContainer").classList.add("hidden");
+
+	  const container = document.getElementById("timeSlotsContainer");
+	  container.innerHTML = `
+		<span class="back-button" onclick="goBackToCalendar()">← Back to Calendar</span>
+		<h4>${date.toDateString()}</h4>
+	  `;
+
+	  const grid = document.createElement("div");
+	  grid.className = "time-grid";
+
+	  for (let hour = 9; hour <= 18; hour++) {
+		const slotStart = new Date(date);
+		slotStart.setHours(hour, 0, 0, 0);
+
+		const slotEnd = new Date(slotStart);
+		slotEnd.setHours(hour + 1);
+
+		const isBusy = window.agentBusyRanges.some(busy =>
+		  slotStart < busy.end && slotEnd > busy.start
+		);
+
+		const slotLabel = slotStart.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+		const btn = document.createElement("button");
+		btn.textContent = isBusy ? `${slotLabel} (Busy!)` : slotLabel;
+		btn.className = "button";
+		btn.disabled = isBusy;
+		btn.onclick = () => {
+		  if (!isBusy) {
+			alert("Coming Soon!");
+		  }
+		};
+
+		grid.appendChild(btn);
+	  }
+
+	  container.appendChild(grid);
+	}
+
+	function goBackToCalendar() {
+	  document.getElementById("timeSlotsContainer").classList.add("hidden");
+	  document.getElementById("calendarContainer").classList.remove("hidden");
+	}
+
+	async function showAvailableAgentResult(userId, userName) {
+	  // Find the last searched entry so we know team, group etc.
+	  const zip = window.lastZipSearch;
+	  const entry = zipGroupsData.find(item => item.zip === zip);
+
+	  if (!entry) {
+		alert("Could not find zip group data for confirmation view.");
+		goBack();
+		return;
+	  }
+
+	  // Load agent photo from API so we can show it
+	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+	  const url = `https://api.followupboss.com/v1/users/${userId}`;
+	  try {
+		const res = await fetch(url, {
+		  headers: {
+			"accept": "application/json",
+			"authorization": `Basic ${apiKey}`
+		  }
+		});
+		if (!res.ok) throw new Error("Failed to load agent info");
+
+		const userData = await res.json();
+
+		window.assignedAgentId = userId;
+
+		const container = document.getElementById("redistributeResult");
+
+		container.innerHTML = `
+		  <p><strong>Reassignment Complete!</strong></p>
+		  <p>Zip: ${zip}</p>
+		  <p>Team: ${entry.team}</p>
+		  <p>Group: ${entry.group}</p>
+		  <table>
+			<tr>
+			  <th>Photo</th>
+			  <th>Name</th>
+			  <th>Action</th>
+			</tr>
+			<tr>
+			  <td><img src="${userData.picture["30x30"]}" alt="${userName}" /></td>
+			  <td>${userName}</td>
+			  <td>
+				<button class="button" style="padding:5px 10px; font-size:12px;"
+				  onclick="scheduleAppointment()">
+				  Schedule an Appointment
+				</button>
+			  </td>
+			</tr>
+		  </table>
+		`;
+
+		document.getElementById("agentsTableContainer").classList.add("hidden");
+		document.getElementById("agentsLoading").classList.add("hidden");
+		document.getElementById("agentsForm").classList.add("hidden");
+
+		// Switch views
+		showView("redistributeView");
+		document.getElementById("redistributeResult").classList.remove("hidden");
+
+	  } catch (err) {
+		console.error(err);
+		alert("Could not load agent details for confirmation view.");
+		goBack();
+	  }
+	}
 
 
     
