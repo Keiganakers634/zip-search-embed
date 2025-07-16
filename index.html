@@ -727,8 +727,13 @@
 
 		const data = await res.json();
 		const appointments = data.appointments || [];
-
 		window.agentBusyRanges = parseBusyWindows(appointments);
+
+		// Always default to empty array if no busy windows
+		if (!window.agentBusyRanges) {
+		  window.agentBusyRanges = [];
+		}
+
 
 		document.getElementById("calendarLoading").classList.add("hidden");
 		document.getElementById("calendarContainer").classList.remove("hidden");
