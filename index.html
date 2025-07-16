@@ -363,7 +363,6 @@
 		"calendarContainer",
 		"timeSlotsContainer",
 		"appointmentFormContainer",
-		"redistributeResult",
 		"agentsLoading",
 		"agentsTableContainer",
 	  ].forEach(id => {
@@ -371,7 +370,7 @@
 		if (el) {
 		  el.classList.add("hidden");
 		  if (["agentsTableContainer", "appointmentFormContainer"].includes(id)) {
-			el.innerHTML = "";
+		    el.innerHTML = "";
 		  }
 		}
 	  });
