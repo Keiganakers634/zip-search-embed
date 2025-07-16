@@ -340,25 +340,30 @@
     let activeView = null;
 
 	function showView(viewId) {
+	  if (!window.isAuthorized && viewId !== "menuButtons") {
+	    alert("You are not authorized to access this tool.");
+	    return;
+	  }
+	
 	  if (activeView) {
-		activeView.classList.remove("active");
+	    activeView.classList.remove("active");
 	  }
 	  const newView = document.getElementById(viewId);
 	  if (newView) {
-		newView.classList.add("active");
-		activeView = newView;
+	    newView.classList.add("active");
+	    activeView = newView;
 	  }
-
-	  // Only show current user info on the menu page
+	
 	  document.getElementById("currentUser").style.display =
-		viewId === "menuButtons" ? "block" : "none";
-
+	    viewId === "menuButtons" ? "block" : "none";
+	
 	  if (viewId === "redistributeView") {
-		document.getElementById("calendarLoading").classList.add("hidden");
-		document.getElementById("calendarContainer").classList.add("hidden");
-		document.getElementById("timeSlotsContainer").classList.add("hidden");
+	    document.getElementById("calendarLoading").classList.add("hidden");
+	    document.getElementById("calendarContainer").classList.add("hidden");
+	    document.getElementById("timeSlotsContainer").classList.add("hidden");
 	  }
 	}
+
 
 
     function goBack() {
