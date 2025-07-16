@@ -331,20 +331,27 @@
 
     let activeView = null;
 
-    function showView(viewId) {
-      if (activeView) {
-        activeView.classList.remove("active");
-      }
-      const newView = document.getElementById(viewId);
-      if (newView) {
-        newView.classList.add("active");
-        activeView = newView;
-      }
+	function showView(viewId) {
+	  if (activeView) {
+		activeView.classList.remove("active");
+	  }
+	  const newView = document.getElementById(viewId);
+	  if (newView) {
+		newView.classList.add("active");
+		activeView = newView;
+	  }
 
-      // Only show current user info on the menu page
-      document.getElementById("currentUser").style.display =
-        viewId === "menuButtons" ? "block" : "none";
-    }
+	  // Only show current user info on the menu page
+	  document.getElementById("currentUser").style.display =
+		viewId === "menuButtons" ? "block" : "none";
+
+	  if (viewId === "redistributeView") {
+		document.getElementById("calendarLoading").classList.add("hidden");
+		document.getElementById("calendarContainer").classList.add("hidden");
+		document.getElementById("timeSlotsContainer").classList.add("hidden");
+	  }
+	}
+
 
     function goBack() {
       showView("menuButtons");
@@ -848,6 +855,8 @@
 		return;
 	  }
 
+
+
 	  // Load agent photo from API so we can show it
 	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
 	  const url = `https://api.followupboss.com/v1/users/${userId}`;
@@ -905,7 +914,16 @@
 	  }
 	}
 
+	function parseBusyWindows(appointments) {
+	  if (!appointments || appointments.length === 0) {
+		return [];
+	  }
 
+	  return appointments.map(app => ({
+		start: new Date(app.startDate),
+		end: new Date(app.endDate)
+	  }));
+	}
     
   </script>
 </body>
