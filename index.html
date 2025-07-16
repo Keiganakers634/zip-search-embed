@@ -791,7 +791,9 @@
     }
 
 	function scheduleAppointment() {
-		showView("calendarLoading");
+		document.getElementById("redistributeResult").classList.add("hidden");
+                document.getElementById("calendarLoading").classList.remove("hidden");
+
 
 		
 		// Call load AFTER setting spinner
