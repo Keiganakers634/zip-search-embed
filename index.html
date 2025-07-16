@@ -271,7 +271,15 @@
 
     function goBack() {
       showView("menuButtons");
+    
+      // Reset the Available Agents view
+      document.getElementById("zipInput").value = "";
+      document.getElementById("agentsForm").classList.remove("hidden");
+      document.getElementById("agentsLoading").classList.add("hidden");
+      document.getElementById("agentsTableContainer").classList.add("hidden");
+      document.getElementById("agentsTableContainer").innerHTML = "";
     }
+
 
     function searchAgents() {
       const zip = document.getElementById("zipInput").value.trim();
