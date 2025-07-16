@@ -301,11 +301,10 @@
             showView("menuButtons");
           } else {
             const unauthorizedHtml = `
-              <div style="background:#ffdddd; padding:15px; color:#800; border:1px solid #f00; margin-top:20px;">
-                ❌ <strong>Unauthorized user:</strong> This internal tool is for Call Center and Lisa team members!
-              </div>
+    	      <div style="background:#ffdddd; padding:15px; color:#800; border:1px solid #f00; margin-top:20px;">
+      		❌ <strong>Unauthorized user:</strong> This internal tool is for Call Center and Lisa team members!
+    	      </div>
             `;
-            document.body.insertAdjacentHTML("beforeend", unauthorizedHtml);
             console.log("❌ User unauthorized:", userEmail);
           }
         } else {
