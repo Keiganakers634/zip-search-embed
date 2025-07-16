@@ -282,12 +282,52 @@
       findGroupByZip(zip);
     }
 
-    function useMostRecentInquiry() {
-      if (!window.contextPersonZip) {
-        alert("No recent inquiry zip available.");
+    async function useMostRecentInquiry() {
+      if (!window.contextPersonId) {
+        alert("No personId found in context.");
         return;
       }
-      findGroupByZip(window.contextPersonZip);
+    
+      const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+      const url = `https://api.followupboss.com/v1/events?limit=10&offset=0&personId=${window.contextPersonId}&type=Inquiry,%20Seller%20Inquiry,%20Property%20Inquiry,%20General%20Inquiry&hasProperty=true`;
+    
+      try {
+        const res = await fetch(url, {
+          headers: {
+            "accept": "application/json",
+            "authorization": `Basic ${apiKey}`
+          }
+        });
+    
+        if (!res.ok) throw new Error("API error fetching recent inquiries.");
+    
+        const data = await res.json();
+        const events = data.events || [];
+    
+        if (events.length === 0) {
+          alert("No recent inquiries with properties found for this contact.");
+          return;
+        }
+    
+        // Find the most recent event with property and property.code
+        const sorted = events
+          .filter(ev => ev.property && ev.property.code)
+          .sort((a, b) => new Date(b.created) - new Date(a.created));
+    
+        if (sorted.length === 0) {
+          alert("No recent property inquiry events contain a zip code.");
+          return;
+        }
+    
+        const zip = sorted[0].property.code;
+        console.log("Using zip code from recent inquiry:", zip);
+    
+        findGroupByZip(zip);
+    
+      } catch (err) {
+        alert("Failed to load recent inquiries.");
+        console.error(err);
+      }
     }
 
     function findGroupByZip(zip) {
