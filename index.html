@@ -5,39 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RS Admin Tool</title>
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 20px;
-      background: #f9f9f9;
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
       overflow-x: hidden;
-      overflow-y: auto;
+      background: #f9f9f9;
+      font-family: sans-serif;
     }
 
     .view {
       position: absolute;
-      top: 80px;
+      top: 0;
       left: 0;
       width: 100%;
       transform: translateX(100%);
       opacity: 0;
       pointer-events: none;
-      height: 0;
       transition: transform 0.4s ease, opacity 0.4s ease;
+      padding: 20px;
+      box-sizing: border-box;
     }
 
     .view.active {
       transform: translateX(0);
       opacity: 1;
       pointer-events: auto;
-      height: auto;
     }
 
     #menuButtons {
+      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      margin-top: 40px;
+      justify-content: flex-start;
+      padding-top: 20px;
     }
 
     #menuButtons .button {
@@ -63,10 +65,18 @@
 
     .back-button {
       display: inline-block;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
       cursor: pointer;
       color: #2563EB;
       font-weight: bold;
+    }
+
+    zapier-interfaces-page-embed {
+      display: block;
+      margin: 0 auto;
+      max-width: 900px;
+      height: 300px;
+      border: none;
     }
   </style>
 
@@ -75,7 +85,6 @@
 </head>
 
 <body>
-  <!-- Container for the main menu buttons -->
   <div id="menuButtons" class="view">
     <div id="currentUser"></div>
     <button class="button" onclick="showView('redistributeView')">Redistribute</button>
@@ -83,21 +92,18 @@
     <button class="button" onclick="showView('agentsView')">Show me available agents</button>
   </div>
 
-  <!-- Redistribute View -->
   <div id="redistributeView" class="view">
     <span class="back-button" onclick="goBack()">← Back</span>
     <h2>Redistribute</h2>
     <p>Coming Soon!</p>
   </div>
 
-  <!-- Agents View -->
   <div id="agentsView" class="view">
     <span class="back-button" onclick="goBack()">← Back</span>
     <h2>Available Agents</h2>
     <p>Coming Soon!</p>
   </div>
 
-  <!-- Zip Code Search (Zapier Embed) View -->
   <div id="zipSearchView" class="view">
     <span class="back-button" onclick="goBack()">← Back</span>
     <zapier-interfaces-page-embed
@@ -105,7 +111,6 @@
       no-background='false'
       allow-query-params='true'
       query-params=''
-      style='max-width: 900px; height: 300px;'
     ></zapier-interfaces-page-embed>
   </div>
 
@@ -210,23 +215,17 @@
     let activeView = null;
 
     function showView(viewId) {
-      // Slide out any active view
       if (activeView) {
         activeView.classList.remove("active");
       }
-
-      // Slide in the requested view
       const newView = document.getElementById(viewId);
       if (newView) {
         newView.classList.add("active");
         activeView = newView;
 
-        // Hide currentUser in sub-views
-        if (viewId !== "menuButtons") {
-          document.getElementById("currentUser").style.display = "none";
-        } else {
-          document.getElementById("currentUser").style.display = "block";
-        }
+        // Show/hide user info
+        document.getElementById("currentUser").style.display =
+          viewId === "menuButtons" ? "block" : "none";
       }
     }
 
