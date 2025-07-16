@@ -10,26 +10,44 @@
       margin: 20px;
       background: #f9f9f9;
     }
+  
     .hidden {
       display: none;
     }
+  
     .view {
       margin-top: 20px;
     }
-    .button {
-      display: inline-block;
-      margin: 10px;
-      padding: 10px 20px;
+  
+    #menuButtons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 40px;
+    }
+  
+    #menuButtons .button {
+      display: block;
+      width: 240px;
+      margin: 10px 0;
+      padding: 14px 20px;
       font-size: 16px;
-      color: #fff;
-      background: #2563EB;
+      font-weight: bold;
+      color: #ffffff;
+      background-color: #2563EB;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
+      transition: background-color 0.3s ease;
+      text-align: center;
+      text-decoration: none;
     }
-    .button:hover {
-      background: #1e4bb8;
+  
+    #menuButtons .button:hover {
+      background-color: #1e4bb8;
     }
+  
     .back-button {
       display: inline-block;
       margin-bottom: 10px;
@@ -38,6 +56,7 @@
       font-weight: bold;
     }
   </style>
+
   <script type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
   <script type="text/javascript" src="https://eia.followupboss.com/embeddedApps-v1.0.1.js"></script>
 </head>
