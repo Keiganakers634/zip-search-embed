@@ -3,27 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zapier Interfaces Embed</title>
-  
-  <!-- Load the Zapier Interfaces Web Component -->
+  <title>Zapier Embedded in FUB</title>
+
+  <!-- Zapier script -->
   <script type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
 
-  <!-- Optional styling for centering and layout -->
+  <!-- Follow Up Boss SDK -->
+  <script src="https://eia.followupboss.com/embeddedApps-v1.0.1.js"></script>
+
   <style>
-    body {
-      margin: 0;
-      padding: 20px;
-      background: #f9f9f9;
-      font-family: sans-serif;
-      display: flex;
-      justify-content: center;
+    .debug-box {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 20px;
+      font-family: monospace;
+      white-space: pre;
+      overflow-x: auto;
+      max-height: 400px;
     }
   </style>
 </head>
-<body>
-  
-  <!-- Zapier Interfaces Embed -->
+
+<body style="margin: 0; padding: 20px;">
+
   <zapier-interfaces-page-embed
+    id="zapierEmbed"
     page-id='cm98vlopd001611ck4v8vy46l'
     no-background='false'
     allow-query-params='true'
@@ -31,8 +36,95 @@
     style='max-width: 900px; width: 100%; height: 500px;'>
   </zapier-interfaces-page-embed>
 
-  <!-- Follow Up Boss Embedded App Script -->
-  <script type="text/javascript" src="https://eia.followupboss.com/embeddedApps-v1.0.1.js"></script>
+  <script>
+    async function verifyContextAndShowData() {
+      const secret = "f38bd4dfb990d163f4f8bc070cc1da16";
+
+      const params = new URLSearchParams(window.location.search);
+      const contextB64 = params.get("context");
+      const signature = params.get("signature");
+
+      if (!contextB64 || !signature) {
+        console.log("No context or signature found.");
+        document.body.insertAdjacentHTML(
+          "afterbegin",
+          `<div style="background:#ffdddd; padding:10px; color:#800;">
+            ⚠️ No context or signature found in URL.
+          </div>`
+        );
+        return;
+      }
+
+      try {
+        const decodedString = atob(contextB64);
+        const contextObj = JSON.parse(decodedString);
+        console.log("Decoded context object:", contextObj);
+
+        // Validate signature
+        const enc = new TextEncoder();
+        const key = await crypto.subtle.importKey(
+          "raw",
+          enc.encode(secret),
+          { name: "HMAC", hash: "SHA-256" },
+          false,
+          ["sign"]
+        );
+
+        const sigBuffer = await crypto.subtle.sign(
+          "HMAC",
+          key,
+          enc.encode(contextB64)
+        );
+
+        const calculatedSig = Array.from(new Uint8Array(sigBuffer))
+          .map(b => b.toString(16).padStart(2, "0"))
+          .join("");
+
+        if (calculatedSig === signature) {
+          console.log("✅ Signature is valid!");
+
+          const html = `
+            <div class="debug-box">
+              <strong>Decoded FUB Context:</strong><br>
+              ${JSON.stringify(contextObj, null, 2)}
+            </div>
+          `;
+          document.body.insertAdjacentHTML("afterbegin", html);
+
+          // Example: get user email
+          const userEmail = contextObj?.user?.email || "";
+          console.log("User email from context:", userEmail);
+
+          const zapierEmbed = document.getElementById("zapierEmbed");
+          if (zapierEmbed) {
+            zapierEmbed.setAttribute(
+              "query-params",
+              `email=${encodeURIComponent(userEmail)}`
+            );
+            console.log("✅ Passed email to Zapier:", userEmail);
+          }
+        } else {
+          console.error("❌ Signature verification failed!");
+          document.body.insertAdjacentHTML(
+            "afterbegin",
+            `<div style="background:#ffdddd; padding:10px; color:#800;">
+              ❌ Signature verification failed!
+            </div>`
+          );
+        }
+      } catch (e) {
+        console.error("Error decoding context:", e);
+        document.body.insertAdjacentHTML(
+          "afterbegin",
+          `<div style="background:#ffdddd; padding:10px; color:#800;">
+            ❌ Error decoding context data.
+          </div>`
+        );
+      }
+    }
+
+    verifyContextAndShowData();
+  </script>
 
 </body>
 </html>
