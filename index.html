@@ -240,100 +240,107 @@
         alert("Could not load zip group data. Please try again later.");
       });
 
-    async function verifyContextAndShowData() {
-      const secret = "f38bd4dfb990d163f4f8bc070cc1da16";
-      const params = new URLSearchParams(window.location.search);
-      const contextB64 = params.get("context");
-      const signature = params.get("signature");
-
-      if (!contextB64 || !signature) {
-        document.body.insertAdjacentHTML(
-          "afterbegin",
-          `<div style="background:#ffdddd; padding:10px; color:#800;">
-            ⚠️ No context or signature found in URL.
-          </div>`
-        );
-        return;
-      }
-
-      try {
-        const decodedString = atob(contextB64);
-        const contextObj = JSON.parse(decodedString);
-
-        const enc = new TextEncoder();
-        const key = await crypto.subtle.importKey(
-          "raw",
-          enc.encode(secret),
-          { name: "HMAC", hash: "SHA-256" },
-          false,
-          ["sign"]
-        );
-
-        const sigBuffer = await crypto.subtle.sign(
-          "HMAC",
-          key,
-          enc.encode(contextB64)
-        );
-
-        const calculatedSig = Array.from(new Uint8Array(sigBuffer))
-          .map(b => b.toString(16).padStart(2, "0"))
-          .join("");
-
-        if (calculatedSig === signature) {
-          console.log("✅ Signature is valid!");
-
-          const userName = contextObj?.user?.name || "(Unknown)";
-          const userEmail = contextObj?.user?.email?.toLowerCase() || "(Unknown)";
-	  window.contextPersonId = contextObj?.person?.id || null;
-	  window.contextPersonZip = contextObj?.person?.postalCode || null;
-	  window.contextPersonName = contextObj?.person?.name || null;
+	async function verifyContextAndShowData() {
+	  const secret = "f38bd4dfb990d163f4f8bc070cc1da16";
+	  const params = new URLSearchParams(window.location.search);
+	  const contextB64 = params.get("context");
+	  const signature = params.get("signature");
 	
-	  window.contextUserId = contextObj?.user?.id || null;
-	  window.contextUserName = contextObj?.user?.name || null;
+	  if (!contextB64 || !signature) {
+	    document.body.insertAdjacentHTML(
+	      "afterbegin",
+	      `<div style="background:#ffdddd; padding:10px; color:#800;">
+	        ⚠️ No context or signature found in URL.
+	      </div>`
+	    );
+	    return;
+	  }
+	
+	  try {
+	    const decodedString = atob(contextB64);
+	    const contextObj = JSON.parse(decodedString);
+	
+	    const enc = new TextEncoder();
+	    const key = await crypto.subtle.importKey(
+	      "raw",
+	      enc.encode(secret),
+	      { name: "HMAC", hash: "SHA-256" },
+	      false,
+	      ["sign"]
+	    );
+	
+	    const sigBuffer = await crypto.subtle.sign(
+	      "HMAC",
+	      key,
+	      enc.encode(contextB64)
+	    );
+	
+	    const calculatedSig = Array.from(new Uint8Array(sigBuffer))
+	      .map(b => b.toString(16).padStart(2, "0"))
+	      .join("");
+	
+	    if (calculatedSig === signature) {
+	      console.log("✅ Signature is valid!");
+	
+	      const userName = contextObj?.user?.name || "(Unknown)";
+	      const userEmail = contextObj?.user?.email?.toLowerCase() || "(Unknown)";
+	      window.contextPersonId = contextObj?.person?.id || null;
+	      window.contextPersonZip = contextObj?.person?.postalCode || null;
+	      window.contextPersonName = contextObj?.person?.name || null;
+	
+	      window.contextUserId = contextObj?.user?.id || null;
+	      window.contextUserName = contextObj?.user?.name || null;
+	
+	      document.getElementById("currentUser").innerHTML = `
+	        <div style="background:#eef; padding:10px; border:1px solid #99f; margin-bottom:20px;">
+	          👤 <strong>Current User:</strong> ${userName} (${userEmail})
+	        </div>
+	      `;
+	
+	      const authorizedEmails = [
+	        "keigan.akers@robertslack.com",
+	        "fubadmin@robertslack.com",
+	        "cat.flanagan@robertslack.com",
+	        "gabe.cordova@robertslack.com",
+	        "francisco.garcia@robertslack.com"
+	      ];
+	
+	      if (authorizedEmails.includes(userEmail)) {
+	        window.isAuthorized = true;
+	        showView("menuButtons");
+	      } else {
+	        window.isAuthorized = false;
+	        document.getElementById("menuButtons").style.display = "none";
+	
+	        document.body.insertAdjacentHTML(
+	          "beforeend",
+	          `<div style="background:#ffdddd; padding:15px; color:#800; border:1px solid #f00; margin-top:20px;">
+	            ❌ <strong>Unauthorized user:</strong> This internal tool is for Call Center and Lisa team members!
+	          </div>`
+	        );
+	
+	        console.log("❌ User unauthorized:", userEmail);
+	      }
+	    } else {
+	      console.error("❌ Signature verification failed!");
+	      document.body.insertAdjacentHTML(
+	        "afterbegin",
+	        `<div style="background:#ffdddd; padding:10px; color:#800;">
+	          ❌ Signature verification failed!
+	        </div>`
+	      );
+	    }
+	  } catch (e) {
+	    console.error("Error decoding context:", e);
+	    document.body.insertAdjacentHTML(
+	      "afterbegin",
+	      `<div style="background:#ffdddd; padding:10px; color:#800;">
+	        ❌ Error decoding context data.
+	      </div>`
+	    );
+	  }
+	}
 
-          document.getElementById("currentUser").innerHTML = `
-            <div style="background:#eef; padding:10px; border:1px solid #99f; margin-bottom:20px;">
-              👤 <strong>Current User:</strong> ${userName} (${userEmail})
-            </div>
-          `;
-
-          const authorizedEmails = [
-            "keigan.akers@robertslack.com",
-            "fubadmin@robertslack.com",
-            "cat.flanagan@robertslack.com",
-            "gabe.cordova@robertslack.com",
-            "francisco.garcia@robertslack.com"
-          ];
-
-          if (authorizedEmails.includes(userEmail)) {
-            showView("menuButtons");
-          } else {
-            const unauthorizedHtml = `
-    	      <div style="background:#ffdddd; padding:15px; color:#800; border:1px solid #f00; margin-top:20px;">
-      		❌ <strong>Unauthorized user:</strong> This internal tool is for Call Center and Lisa team members!
-    	      </div>
-            `;
-            console.log("❌ User unauthorized:", userEmail);
-          }
-        } else {
-          console.error("❌ Signature verification failed!");
-          document.body.insertAdjacentHTML(
-            "afterbegin",
-            `<div style="background:#ffdddd; padding:10px; color:#800;">
-              ❌ Signature verification failed!
-            </div>`
-          );
-        }
-      } catch (e) {
-        console.error("Error decoding context:", e);
-        document.body.insertAdjacentHTML(
-          "afterbegin",
-          `<div style="background:#ffdddd; padding:10px; color:#800;">
-            ❌ Error decoding context data.
-          </div>`
-        );
-      }
-    }
 
     verifyContextAndShowData();
 
