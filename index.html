@@ -5,26 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RS Admin Tool</title>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow-x: hidden;
-      background: #f9f9f9;
+    body {
       font-family: sans-serif;
+      margin: 20px;
+      background: #f9f9f9;
+      overflow-x: hidden;
     }
 
     .view {
       position: absolute;
-      top: 0;
+      top: 20px;
       left: 0;
       width: 100%;
       transform: translateX(100%);
       opacity: 0;
-      pointer-events: none;
       transition: transform 0.4s ease, opacity 0.4s ease;
-      padding: 20px;
-      box-sizing: border-box;
     }
 
     .view.active {
@@ -34,15 +29,15 @@
     }
 
     #menuButtons {
-      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      padding-top: 20px;
+      margin-top: 20px;
     }
 
-    #menuButtons .button {
+    #menuButtons .button,
+    .button {
       display: block;
       width: 240px;
       margin: 10px 0;
@@ -59,24 +54,34 @@
       text-decoration: none;
     }
 
-    #menuButtons .button:hover {
+    #menuButtons .button:hover,
+    .button:hover {
       background-color: #1e4bb8;
     }
 
     .back-button {
       display: inline-block;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       cursor: pointer;
       color: #2563EB;
       font-weight: bold;
     }
 
-    zapier-interfaces-page-embed {
-      display: block;
-      margin: 0 auto;
-      max-width: 900px;
-      height: 300px;
-      border: none;
+    table {
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    tr.highlight {
+      background-color: #dbeafe;
+    }
+
+    .hidden {
+      display: none;
     }
   </style>
 
@@ -85,25 +90,24 @@
 </head>
 
 <body>
+  <!-- Container for Current User Info -->
+  <div id="currentUser"></div>
+
+  <!-- Main Menu Buttons -->
   <div id="menuButtons" class="view">
-    <div id="currentUser"></div>
     <button class="button" onclick="showView('redistributeView')">Redistribute</button>
     <button class="button" onclick="showView('zipSearchView')">Zip Code Search</button>
     <button class="button" onclick="showView('agentsView')">Show me available agents</button>
   </div>
 
+  <!-- Redistribute View -->
   <div id="redistributeView" class="view">
     <span class="back-button" onclick="goBack()">← Back</span>
     <h2>Redistribute</h2>
     <p>Coming Soon!</p>
   </div>
 
-  <div id="agentsView" class="view">
-    <span class="back-button" onclick="goBack()">← Back</span>
-    <h2>Available Agents</h2>
-    <p>Coming Soon!</p>
-  </div>
-
+  <!-- Zip Code Search View -->
   <div id="zipSearchView" class="view">
     <span class="back-button" onclick="goBack()">← Back</span>
     <zapier-interfaces-page-embed
@@ -111,13 +115,51 @@
       no-background='false'
       allow-query-params='true'
       query-params=''
+      style='max-width: 900px; height: 300px;'
     ></zapier-interfaces-page-embed>
   </div>
 
+  <!-- Agents View -->
+  <div id="agentsView" class="view">
+    <span class="back-button" onclick="goBack()">← Back</span>
+    <h2>Available Agents</h2>
+
+    <div id="agentsForm">
+      <label for="zipInput"><strong>Zip Code:</strong></label><br/>
+      <input type="text" id="zipInput" maxlength="5" style="margin-top:5px; padding:5px; width:120px;" />
+      <button class="button" style="margin-top:10px;" onclick="searchAgents()">Search</button><br/>
+      <button class="button" style="margin-top:10px;" onclick="useMostRecentInquiry()">Use Most Recent Inquiry</button>
+    </div>
+
+    <div id="agentsLoading" class="hidden" style="margin-top:20px;">
+      Pulling Agent Details...
+    </div>
+
+    <div id="agentsTableContainer" class="hidden"></div>
+  </div>
+
   <script>
+    let zipGroupsData = [];
+
+    // Load JSON data
+    fetch("https://keiganakers634.github.io/zip-search-embed/zips.json")
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("Failed to load zip data JSON.");
+        }
+        return response.json();
+      })
+      .then(data => {
+        zipGroupsData = data;
+        console.log("Loaded zipGroupsData:", zipGroupsData);
+      })
+      .catch(err => {
+        console.error("Error loading zipGroupsData:", err);
+        alert("Could not load zip group data. Please try again later.");
+      });
+
     async function verifyContextAndShowData() {
       const secret = "f38bd4dfb990d163f4f8bc070cc1da16";
-
       const params = new URLSearchParams(window.location.search);
       const contextB64 = params.get("context");
       const signature = params.get("signature");
@@ -136,7 +178,6 @@
         const decodedString = atob(contextB64);
         const contextObj = JSON.parse(decodedString);
 
-        // Validate signature
         const enc = new TextEncoder();
         const key = await crypto.subtle.importKey(
           "raw",
@@ -161,15 +202,14 @@
 
           const userName = contextObj?.user?.name || "(Unknown)";
           const userEmail = contextObj?.user?.email?.toLowerCase() || "(Unknown)";
+          window.contextPersonId = contextObj?.person?.id || null;
+          window.contextPersonZip = contextObj?.person?.postalCode || null;
 
-          const userDiv = document.getElementById("currentUser");
-          if (userDiv) {
-            userDiv.innerHTML = `
-              <div style="background:#eef; padding:10px; border:1px solid #99f; margin-bottom:20px;">
-                👤 <strong>Current User:</strong> ${userName} (${userEmail})
-              </div>
-            `;
-          }
+          document.getElementById("currentUser").innerHTML = `
+            <div style="background:#eef; padding:10px; border:1px solid #99f; margin-bottom:20px;">
+              👤 <strong>Current User:</strong> ${userName} (${userEmail})
+            </div>
+          `;
 
           const authorizedEmails = [
             "keigan.akers@robertslack.com",
@@ -222,15 +262,150 @@
       if (newView) {
         newView.classList.add("active");
         activeView = newView;
-
-        // Show/hide user info
-        document.getElementById("currentUser").style.display =
-          viewId === "menuButtons" ? "block" : "none";
       }
+
+      // Only show current user info on the menu page
+      document.getElementById("currentUser").style.display =
+        viewId === "menuButtons" ? "block" : "none";
     }
 
     function goBack() {
       showView("menuButtons");
+    }
+
+    function searchAgents() {
+      const zip = document.getElementById("zipInput").value.trim();
+      if (!/^\d{5}$/.test(zip)) {
+        alert("Please enter a valid zip code");
+        return;
+      }
+      findGroupByZip(zip);
+    }
+
+    function useMostRecentInquiry() {
+      if (!window.contextPersonZip) {
+        alert("No recent inquiry zip available.");
+        return;
+      }
+      findGroupByZip(window.contextPersonZip);
+    }
+
+    function findGroupByZip(zip) {
+      if (zipGroupsData.length === 0) {
+        alert("Zip group data is still loading or unavailable.");
+        return;
+      }
+      const entry = zipGroupsData.find(item => item.zip === zip);
+      if (entry) {
+        loadGroupData(entry);
+      } else {
+        alert("No matching group found for this zip code.");
+      }
+    }
+
+    async function loadGroupData(entry) {
+      document.getElementById("agentsForm").classList.add("hidden");
+      document.getElementById("agentsLoading").classList.remove("hidden");
+
+      const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+      const url = `https://api.followupboss.com/v1/groups/${entry.groupId}`;
+
+      try {
+        const res = await fetch(url, {
+          headers: {
+            "accept": "application/json",
+            "authorization": `Basic ${apiKey}`
+          }
+        });
+
+        if (!res.ok) throw new Error("API error");
+
+        const data = await res.json();
+        renderAgents(entry, data);
+      } catch (err) {
+        alert("Failed to pull agent details. Please try again.");
+        console.error(err);
+        goBack();
+      }
+    }
+
+    function renderAgents(entry, groupData) {
+      const container = document.getElementById("agentsTableContainer");
+      container.innerHTML = "";
+
+      const nextId = groupData.nextRoundRobinUser;
+      const activeAgents = groupData.users.filter(u => !u.pauseLeadDistribution);
+
+      let html = `
+        <h3>Team: ${entry.team}</h3>
+        <h4>Group: ${entry.group}</h4>
+        <table>
+          <tr>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Action</th>
+          </tr>
+      `;
+
+      for (const agent of activeAgents) {
+        const isNext = agent.id === nextId;
+        html += `
+          <tr class="${isNext ? 'highlight' : ''}">
+            <td><img src="${agent.picture["30x30"]}" alt="${agent.name}" /></td>
+            <td>${agent.name}</td>
+            <td>
+              <button class="button" style="padding:5px 10px; font-size:12px;"
+                onclick="reassignLead(${agent.id}, '${agent.name}')">
+                ${isNext ? "Next in Line!" : "Reassign"}
+              </button>
+            </td>
+          </tr>
+        `;
+      }
+
+      html += "</table>";
+
+      container.innerHTML = html;
+      document.getElementById("agentsLoading").classList.add("hidden");
+      container.classList.remove("hidden");
+    }
+
+    async function reassignLead(userId, userName) {
+      if (!window.contextPersonId) {
+        alert("Cannot reassign. PersonId not available.");
+        return;
+      }
+
+      const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+      const url = `https://api.followupboss.com/v1/people/${window.contextPersonId}?mergeTags=false`;
+
+      const payload = { assignedUserId: userId };
+
+      try {
+        const res = await fetch(url, {
+          method: "PUT",
+          headers: {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "authorization": `Basic ${apiKey}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error("Failed PUT");
+
+        const data = await res.json();
+
+        if (data.assignedUserId === userId) {
+          alert("Distributed!");
+          goBack();
+        } else {
+          throw new Error("Response did not confirm assignment.");
+        }
+      } catch (err) {
+        alert("That didn't work...Try again, or pick a different agent.");
+        console.error(err);
+      }
     }
   </script>
 </body>
