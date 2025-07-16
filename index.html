@@ -896,14 +896,21 @@
 	  const type = document.getElementById("apptType").value;
 	  const details = document.getElementById("apptDetails").value || "";
 	
-	  const type_map = {
-	    "CC Buyer - Consultation": 182,
-	    "CC Buyer - Showing Appointment": 183,
-	    "CC Seller - Consultation": 184,
-	    "ISA Buyer - Consultation": 185,
-	    "ISA Buyer - Showing Appt": 186,
-	    "ISA Seller - Consultation": 187
-	  };
+	const type_map = {
+	    "ISA Buyer - Showing Appt": 6,
+	    "ISA Buyer - Consultation": 5,
+	    "ISA Seller - Consultation": 4,
+	    "Buyer Consultation": 7,
+	    "Buyer - First Showings": 8,
+	    "Seller Consultation": 9,
+	    "Buyer - Zoom/Phone Call Appt": 10,
+	    "Seller - Zoom/Phone Call Appt": 11,
+	    "Under Contract Appt": 12,
+	    "CC Buyer - Showing Appointment": 13,
+	    "CC Buyer - Consultation": 14,
+	    "CC Seller - Consultation": 15,
+	    "Buyer - Addl Showings": 16    
+	}
 	
 	  const typeId = type_map[type] || null;
 	
