@@ -3,32 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FUB + Zapier Embedded App</title>
+  <title>RS Admin Tool</title>
   <style>
     body {
       font-family: sans-serif;
       margin: 20px;
       background: #f9f9f9;
     }
-    .debug-box {
-      background: #f0f0f0;
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 20px;
-      font-family: monospace;
-      white-space: pre-wrap;
+    .hidden {
+      display: none;
+    }
+    .view {
+      margin-top: 20px;
+    }
+    .button {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #fff;
+      background: #2563EB;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .button:hover {
+      background: #1e4bb8;
+    }
+    .back-button {
+      display: inline-block;
+      margin-bottom: 10px;
+      cursor: pointer;
+      color: #2563EB;
+      font-weight: bold;
     }
   </style>
-  <!-- Zapier Web Component -->
   <script type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
-
-  <!-- Follow Up Boss embeddedApps script (optional if needed) -->
   <script type="text/javascript" src="https://eia.followupboss.com/embeddedApps-v1.0.1.js"></script>
 </head>
 
 <body>
-  <!-- Zapier embed container (initially hidden) -->
-  <div id="zapierEmbed" style="display: none;">
+  <!-- Container for Current User Info -->
+  <div id="currentUser"></div>
+
+  <!-- Container for the main menu buttons -->
+  <div id="menuButtons" class="view hidden">
+    <button class="button" onclick="showView('redistributeView')">Redistribute</button>
+    <button class="button" onclick="showView('zipSearchView')">Zip Code Search</button>
+    <button class="button" onclick="showView('agentsView')">Show me available agents</button>
+  </div>
+
+  <!-- Redistribute View -->
+  <div id="redistributeView" class="view hidden">
+    <span class="back-button" onclick="goBack()">← Back</span>
+    <h2>Redistribute</h2>
+    <p>Coming Soon!</p>
+  </div>
+
+  <!-- Agents View -->
+  <div id="agentsView" class="view hidden">
+    <span class="back-button" onclick="goBack()">← Back</span>
+    <h2>Available Agents</h2>
+    <p>Coming Soon!</p>
+  </div>
+
+  <!-- Zip Code Search (Zapier Embed) View -->
+  <div id="zipSearchView" class="view hidden">
+    <span class="back-button" onclick="goBack()">← Back</span>
     <zapier-interfaces-page-embed
       page-id='cm98vlopd001611ck4v8vy46l'
       no-background='false'
@@ -86,26 +127,13 @@
           const userName = contextObj?.user?.name || "(Unknown)";
           const userEmail = contextObj?.user?.email?.toLowerCase() || "(Unknown)";
 
-          // Show Current User info
-          const userHtml = `
+          // Display current user
+          document.getElementById("currentUser").innerHTML = `
             <div style="background:#eef; padding:10px; border:1px solid #99f; margin-bottom:20px;">
               👤 <strong>Current User:</strong> ${userName} (${userEmail})
             </div>
           `;
-          document.body.insertAdjacentHTML("afterbegin", userHtml);
 
-        /*
-        // Show decoded JSON for debugging
-        const debugHtml = `
-          <div class="debug-box">
-            <strong>Decoded FUB Context:</strong><br>
-            ${JSON.stringify(contextObj, null, 2)}
-          </div>
-        `;
-        document.body.insertAdjacentHTML("afterbegin", debugHtml);
-        */ 
-
-          // ✅ AUTHORIZATION CHECK
           const authorizedEmails = [
             "keigan.akers@robertslack.com",
             "fubadmin@robertslack.com",
@@ -114,13 +142,9 @@
             "francisco.garcia@robertslack.com"
           ];
 
-          const zapierEmbed = document.getElementById("zapierEmbed");
-
           if (authorizedEmails.includes(userEmail)) {
-            zapierEmbed.style.display = "block";
-            console.log("✅ User authorized:", userEmail);
+            document.getElementById("menuButtons").classList.remove("hidden");
           } else {
-            zapierEmbed.style.display = "none";
             const unauthorizedHtml = `
               <div style="background:#ffdddd; padding:15px; color:#800; border:1px solid #f00; margin-top:20px;">
                 ❌ <strong>Unauthorized user:</strong> This internal tool is for Call Center and Lisa team members!
@@ -150,6 +174,17 @@
     }
 
     verifyContextAndShowData();
+
+    // UI View switching functions
+    function showView(viewId) {
+      document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
+      document.getElementById(viewId).classList.remove("hidden");
+    }
+
+    function goBack() {
+      document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
+      document.getElementById("menuButtons").classList.remove("hidden");
+    }
   </script>
 </body>
 </html>
