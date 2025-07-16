@@ -95,7 +95,7 @@
 
   <!-- Main Menu Buttons -->
   <div id="menuButtons" class="view">
-    <button class="button" onclick="showView('redistributeView')">Redistribute</button>
+    <button class="button" onclick="showView('redistributeView'); startRedistribute();">Redistribute</button>
     <button class="button" onclick="showView('zipSearchView')">Zip Code Search</button>
     <button class="button" onclick="showView('agentsView')">Show me available agents</button>
   </div>
@@ -104,8 +104,10 @@
   <div id="redistributeView" class="view">
     <span class="back-button" onclick="goBack()">← Back</span>
     <h2>Redistribute</h2>
-    <p>Coming Soon!</p>
+    <div id="redistributeLoading" class="hidden">Redistributing...</div>
+    <div id="redistributeResult" class="hidden"></div>
   </div>
+
 
   <!-- Zip Code Search View -->
   <div id="zipSearchView" class="view">
@@ -455,6 +457,172 @@
         console.error(err);
       }
     }
+    
+    function startRedistribute() {
+      document.getElementById("redistributeLoading").classList.remove("hidden");
+      document.getElementById("redistributeResult").classList.add("hidden");
+    
+      getMostRecentZipForRedistribute();
+    }
+    
+    async function getMostRecentZipForRedistribute() {
+      if (!window.contextPersonId) {
+        alert("Person ID missing from context.");
+        goBack();
+        return;
+      }
+    
+      const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+      const url = `https://api.followupboss.com/v1/events?limit=10&offset=0&personId=${window.contextPersonId}&type=Inquiry%2C%20Seller%20Inquiry%2C%20Property%20Inquiry%2C%20General%20Inquiry&hasProperty=true`;
+    
+      try {
+        const res = await fetch(url, {
+          headers: {
+            "accept": "application/json",
+            "authorization": `Basic ${apiKey}`
+          }
+        });
+    
+        if (!res.ok) throw new Error("Events API error");
+    
+        const data = await res.json();
+    
+        const sorted = data.events
+          .filter(ev => ev.property?.code)
+          .sort((a, b) => new Date(b.created) - new Date(a.created));
+    
+        if (sorted.length > 0) {
+          const zip = sorted[0].property.code;
+          console.log("Most recent inquiry zip:", zip);
+          findGroupAndRedistribute(zip);
+        } else {
+          alert("No recent inquiries with property zip found.");
+          goBack();
+        }
+      } catch (e) {
+        console.error(e);
+        alert("Error retrieving recent inquiries.");
+        goBack();
+      }
+    }
+    
+    async function findGroupAndRedistribute(zip) {
+      const entry = zipGroupsData.find(item => item.zip === zip);
+      if (!entry) {
+        alert("No matching group found for this zip code.");
+        goBack();
+        return;
+      }
+    
+      // Load group details
+      const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+      const url = `https://api.followupboss.com/v1/groups/${entry.groupId}`;
+    
+      try {
+        const res = await fetch(url, {
+          headers: {
+            "accept": "application/json",
+            "authorization": `Basic ${apiKey}`
+          }
+        });
+    
+        if (!res.ok) throw new Error("Group API error");
+    
+        const data = await res.json();
+    
+        const nextUserId = data.nextRoundRobinUser;
+        const nextUser = data.users.find(u => u.id === nextUserId);
+    
+        if (!nextUser) {
+          alert("Could not determine next round-robin user.");
+          goBack();
+          return;
+        }
+    
+        // Perform the reassignment
+        await executeRedistribution(nextUser, entry, zip);
+      } catch (e) {
+        console.error(e);
+        alert("Error pulling group details.");
+        goBack();
+      }
+    }
+    
+    async function executeRedistribution(agent, entry, zip) {
+      if (!window.contextPersonId) {
+        alert("Person ID missing from context.");
+        goBack();
+        return;
+      }
+    
+      const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+      const url = `https://api.followupboss.com/v1/people/${window.contextPersonId}?mergeTags=false`;
+    
+      const payload = { assignedUserId: agent.id };
+    
+      try {
+        const res = await fetch(url, {
+          method: "PUT",
+          headers: {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "authorization": `Basic ${apiKey}`
+          },
+          body: JSON.stringify(payload)
+        });
+    
+        if (!res.ok) throw new Error("PUT failed");
+    
+        const data = await res.json();
+    
+        if (data.assignedUserId === agent.id) {
+          showRedistributeResult(agent, entry, zip);
+        } else {
+          throw new Error("Response did not confirm assignment.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Redistribution failed. Try again.");
+        goBack();
+      }
+    }
+    
+    function showRedistributeResult(agent, entry, zip) {
+      const container = document.getElementById("redistributeResult");
+    
+      container.innerHTML = `
+        <p><strong>Redistribution Complete!</strong></p>
+        <p>Zip: ${zip}</p>
+        <p>Team: ${entry.team}</p>
+        <p>Group: ${entry.group}</p>
+        <table>
+          <tr>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Action</th>
+          </tr>
+          <tr>
+            <td><img src="${agent.picture["30x30"]}" alt="${agent.name}" /></td>
+            <td>${agent.name}</td>
+            <td>
+              <button class="button" style="padding:5px 10px; font-size:12px;"
+                onclick="scheduleAppointment()">
+                Schedule an Appointment
+              </button>
+            </td>
+          </tr>
+        </table>
+      `;
+    
+      document.getElementById("redistributeLoading").classList.add("hidden");
+      container.classList.remove("hidden");
+    }
+
+    function scheduleAppointment() {
+      alert("Appointment scheduling coming soon!");
+    }
+
+    
   </script>
 </body>
 </html>
