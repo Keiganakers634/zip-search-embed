@@ -164,7 +164,7 @@
   <!-- Main Menu Buttons -->
   <div id="menuButtons" class="view">
     <button class="button" onclick="showView('redistributeView'); startRedistribute();">Redistribute</button>
-    <button class="button" onclick="showView('zipSearchView')">Zip Code Search</button>
+    <button class="button" onclick="showView('zipSearchView')">Appointment Setter</button>
     <button class="button" onclick="showView('agentsView')">Show me available agents</button>
   </div>
 
@@ -444,21 +444,50 @@
         console.error(err);
       }
     }
+	
+	function findClosestZipEntry(zip) {
+	  if (zipGroupsData.length === 0) return null;
 
-    function findGroupByZip(zip) {
-      if (zipGroupsData.length === 0) {
-        alert("Zip group data is still loading or unavailable.");
-        return;
-      }
-      const entry = zipGroupsData.find(item => item.zip === zip);
-      if (entry) {
-        loadGroupData(entry);
-      } else {
-        alert("No matching group found for this zip code.");
-      }
-    }
+	  const numericZip = parseInt(zip, 10);
+	  let closest = null;
+	  let minDiff = Infinity;
 
-    async function loadGroupData(entry) {
+	  for (const item of zipGroupsData) {
+		const candidateZip = parseInt(item.zip, 10);
+		const diff = Math.abs(candidateZip - numericZip);
+
+		if (diff < minDiff) {
+		  minDiff = diff;
+		  closest = item;
+		}
+	  }
+
+	  return closest;
+	}
+
+
+	function findGroupByZip(zip) {
+	  if (zipGroupsData.length === 0) {
+		alert("Zip group data is still loading or unavailable.");
+		return;
+	  }
+
+	  const exactEntry = zipGroupsData.find(item => item.zip === zip);
+	  if (exactEntry) {
+		loadGroupData(exactEntry, zip);
+	  } else {
+		const closestEntry = findClosestZipEntry(zip);
+		if (closestEntry) {
+		  console.log(`⚠️ No exact match for ${zip}. Using closest zip ${closestEntry.zip}.`);
+		  loadGroupData(closestEntry, zip);
+		} else {
+		  alert("No matching group found for this zip code.");
+		}
+	  }
+	}
+
+
+    async function loadGroupData(entry, searchedZip) {
       document.getElementById("agentsForm").classList.add("hidden");
       document.getElementById("agentsLoading").classList.remove("hidden");
 
@@ -476,7 +505,7 @@
         if (!res.ok) throw new Error("API error");
 
         const data = await res.json();
-        renderAgents(entry, data);
+		renderAgents(entry, data, searchedZip);
       } catch (err) {
         alert("Failed to pull agent details. Please try again.");
         console.error(err);
@@ -484,7 +513,7 @@
       }
     }
 
-    function renderAgents(entry, groupData) {
+    function renderAgents(entry, groupData, searchedZip) {
       const container = document.getElementById("agentsTableContainer");
       container.innerHTML = "";
 
@@ -494,6 +523,7 @@
       let html = `
         <h3>Team: ${entry.team}</h3>
         <h4>Group: ${entry.group}</h4>
+		<h4>Zip Used: ${searchedZip}</h4>
         <table>
           <tr>
             <th>Photo</th>
@@ -612,12 +642,16 @@
     }
     
     async function findGroupAndRedistribute(zip) {
-      const entry = zipGroupsData.find(item => item.zip === zip);
-      if (!entry) {
-        alert("No matching group found for this zip code.");
-        goBack();
-        return;
-      }
+	  let entry = zipGroupsData.find(item => item.zip === zip);
+	  if (!entry) {
+	    entry = findClosestZipEntry(zip);
+	    if (!entry) {
+	  	  alert("No matching group found for this zip code.");
+		  goBack();
+		  return;
+	    }
+	  console.log(`⚠️ No exact match for ${zip}. Using closest zip ${entry.zip}.`);
+	}
     
       // Load group details
       const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
