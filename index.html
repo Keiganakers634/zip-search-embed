@@ -864,20 +864,22 @@
 	  ];
 	
 	  let html = `
-	    <span class="back-button" onclick="goBackToTimeSlots('${date.toISOString()}')">← Back to Time Slots</span>
-	    <h4>Schedule Appointment for ${date.toDateString()} at ${slotStart.toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'})}</h4>
+	    <div style="display:flex; flex-direction:column; align-items:center; max-width: 400px; margin: 0 auto;">
+	      <span class="back-button" onclick="goBackToTimeSlots('${date.toISOString()}')">← Back to Time Slots</span>
+	      <h4 style="margin-top:10px;">Schedule Appointment for ${date.toDateString()} at ${slotStart.toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'})}</h4>
 	
-	    <label for="apptType"><strong>Type:</strong></label>
-	    <select id="apptType" style="margin: 8px 0; width: 240px;">
-	      ${typeOptions.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
-	    </select>
+	      <label for="apptType" style="margin-top:10px;"><strong>Type:</strong></label>
+	      <select id="apptType" style="margin: 8px 0; width: 100%;">
+	        ${typeOptions.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
+	      </select>
 	
-	    <label for="apptDetails"><strong>Details:</strong></label>
-	    <textarea id="apptDetails" rows="3" style="width: 240px; margin-top: 8px;"></textarea>
+	      <label for="apptDetails" style="margin-top:10px;"><strong>Details:</strong></label>
+	      <textarea id="apptDetails" rows="3" style="width: 100%; margin-top: 8px;"></textarea>
 	
-	    <button class="button" style="margin-top: 12px;" onclick="submitAppointment('${slotStart.toISOString()}')">
-	      Set Appointment
-	    </button>
+	      <button class="button" style="margin-top: 16px;" onclick="submitAppointment('${slotStart.toISOString()}')">
+	        Set Appointment
+	      </button>
+	    </div>
 	  `;
 	
 	  container.innerHTML = html;
@@ -886,12 +888,22 @@
 
 	function goBackToTimeSlots(dateIso) {
 	  document.getElementById("appointmentFormContainer").classList.add("hidden");
-	  document.getElementById("timeSlotsContainer").classList.remove("hidden");
+	  renderTimeSlots(new Date(dateIso));
 	}
+
 
 	async function submitAppointment(startIso) {
 	  const type = document.getElementById("apptType").value;
 	  const details = document.getElementById("apptDetails").value || "";
+	
+	  const type_map = {
+	    "CC Buyer - Consultation": 182,
+	    "CC Buyer - Showing Appointment": 183,
+	    "CC Seller - Consultation": 184,
+	    "ISA Buyer - Consultation": 185,
+	    "ISA Buyer - Showing Appt": 186,
+	    "ISA Seller - Consultation": 187
+	  };
 	
 	  const typeId = type_map[type] || null;
 	
@@ -935,17 +947,26 @@
 	      body: JSON.stringify(payload)
 	    });
 	
-	    if (!res.ok) throw new Error("Failed to create appointment");
+	    if (!res.ok) {
+	      const text = await res.text();
+	      console.error("Appointment create error:", text);
+	      alert("❌ Failed to create appointment: " + text);
+	      return;
+	    }
 	
 	    const data = await res.json();
-	    alert("✅ Appointment created!");
+	    console.log("✅ Appointment created!", data);
+	    alert("✅ Appointment successfully created!");
+	
+	    // Go back to main menu or somewhere else
 	    goBack();
 	
 	  } catch (err) {
 	    console.error(err);
-	    alert("❌ Failed to create appointment.");
+	    alert("❌ Failed to create appointment. Check console for details.");
 	  }
 	}
+
 
 
 	function goBackToCalendar() {
