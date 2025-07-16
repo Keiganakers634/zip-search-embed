@@ -9,16 +9,25 @@
       font-family: sans-serif;
       margin: 20px;
       background: #f9f9f9;
+      overflow-x: hidden;
     }
-  
-    .hidden {
-      display: none;
-    }
-  
+
     .view {
-      margin-top: 20px;
+      position: absolute;
+      top: 80px;
+      left: 0;
+      width: 100%;
+      transform: translateX(100%);
+      opacity: 0;
+      transition: transform 0.4s ease, opacity 0.4s ease;
     }
-  
+
+    .view.active {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
     #menuButtons {
       display: flex;
       flex-direction: column;
@@ -26,7 +35,7 @@
       justify-content: center;
       margin-top: 40px;
     }
-  
+
     #menuButtons .button {
       display: block;
       width: 240px;
@@ -43,11 +52,11 @@
       text-align: center;
       text-decoration: none;
     }
-  
+
     #menuButtons .button:hover {
       background-color: #1e4bb8;
     }
-  
+
     .back-button {
       display: inline-block;
       margin-bottom: 10px;
@@ -66,28 +75,28 @@
   <div id="currentUser"></div>
 
   <!-- Container for the main menu buttons -->
-  <div id="menuButtons" class="view hidden">
+  <div id="menuButtons" class="view">
     <button class="button" onclick="showView('redistributeView')">Redistribute</button>
     <button class="button" onclick="showView('zipSearchView')">Zip Code Search</button>
     <button class="button" onclick="showView('agentsView')">Show me available agents</button>
   </div>
 
   <!-- Redistribute View -->
-  <div id="redistributeView" class="view hidden">
+  <div id="redistributeView" class="view">
     <span class="back-button" onclick="goBack()">← Back</span>
     <h2>Redistribute</h2>
     <p>Coming Soon!</p>
   </div>
 
   <!-- Agents View -->
-  <div id="agentsView" class="view hidden">
+  <div id="agentsView" class="view">
     <span class="back-button" onclick="goBack()">← Back</span>
     <h2>Available Agents</h2>
     <p>Coming Soon!</p>
   </div>
 
   <!-- Zip Code Search (Zapier Embed) View -->
-  <div id="zipSearchView" class="view hidden">
+  <div id="zipSearchView" class="view">
     <span class="back-button" onclick="goBack()">← Back</span>
     <zapier-interfaces-page-embed
       page-id='cm98vlopd001611ck4v8vy46l'
@@ -146,7 +155,6 @@
           const userName = contextObj?.user?.name || "(Unknown)";
           const userEmail = contextObj?.user?.email?.toLowerCase() || "(Unknown)";
 
-          // Display current user
           document.getElementById("currentUser").innerHTML = `
             <div style="background:#eef; padding:10px; border:1px solid #99f; margin-bottom:20px;">
               👤 <strong>Current User:</strong> ${userName} (${userEmail})
@@ -162,7 +170,7 @@
           ];
 
           if (authorizedEmails.includes(userEmail)) {
-            document.getElementById("menuButtons").classList.remove("hidden");
+            showView("menuButtons");
           } else {
             const unauthorizedHtml = `
               <div style="background:#ffdddd; padding:15px; color:#800; border:1px solid #f00; margin-top:20px;">
@@ -194,15 +202,24 @@
 
     verifyContextAndShowData();
 
-    // UI View switching functions
+    let activeView = null;
+
     function showView(viewId) {
-      document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
-      document.getElementById(viewId).classList.remove("hidden");
+      // Slide out any active view
+      if (activeView) {
+        activeView.classList.remove("active");
+      }
+
+      // Slide in the requested view
+      const newView = document.getElementById(viewId);
+      if (newView) {
+        newView.classList.add("active");
+        activeView = newView;
+      }
     }
 
     function goBack() {
-      document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
-      document.getElementById("menuButtons").classList.remove("hidden");
+      showView("menuButtons");
     }
   </script>
 </body>
