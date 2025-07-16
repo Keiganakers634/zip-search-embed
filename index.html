@@ -699,11 +699,13 @@
     }
 
 	function scheduleAppointment() {
-	  document.getElementById("redistributeResult").classList.add("hidden");
-	  document.getElementById("calendarLoading").classList.remove("hidden");
-	  document.getElementById("calendarContainer").classList.add("hidden");
-	  document.getElementById("timeSlotsContainer").classList.add("hidden");
-	  loadAgentAppointments();
+		document.getElementById("calendarLoading").classList.remove("hidden");
+		document.getElementById("calendarContainer").classList.add("hidden");
+		document.getElementById("timeSlotsContainer").classList.add("hidden");
+		
+		// Call load AFTER setting spinner
+		setTimeout(loadAgentAppointments, 50);
+
 	}
 
 	async function loadAgentAppointments() {
