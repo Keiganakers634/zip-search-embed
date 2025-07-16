@@ -94,14 +94,16 @@
           `;
           document.body.insertAdjacentHTML("afterbegin", userHtml);
 
-          // Show decoded JSON for debugging
-          const debugHtml = `
-            <div class="debug-box">
-              <strong>Decoded FUB Context:</strong><br>
-              ${JSON.stringify(contextObj, null, 2)}
-            </div>
-          `;
-          document.body.insertAdjacentHTML("afterbegin", debugHtml);
+        /*
+        // Show decoded JSON for debugging
+        const debugHtml = `
+          <div class="debug-box">
+            <strong>Decoded FUB Context:</strong><br>
+            ${JSON.stringify(contextObj, null, 2)}
+          </div>
+        `;
+        document.body.insertAdjacentHTML("afterbegin", debugHtml);
+        */ 
 
           // ✅ AUTHORIZATION CHECK
           const authorizedEmails = [
