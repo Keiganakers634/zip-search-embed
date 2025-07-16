@@ -139,6 +139,8 @@
     <h2>Redistribute</h2>
     <div id="redistributeLoading" class="hidden">Redistributing...</div>
     <div id="redistributeResult" class="hidden"></div>
+    <div id="calendarContainer" class="hidden"></div>
+    <div id="timeSlotsContainer" class="hidden"></div>
   </div>
 
 
@@ -625,6 +627,7 @@
     
     function showRedistributeResult(agent, entry, zip) {
       const container = document.getElementById("redistributeResult");
+      window.assignedAgentId = agent.id;
     
       container.innerHTML = `
         <p><strong>Redistribution Complete!</strong></p>
@@ -655,8 +658,125 @@
     }
 
     function scheduleAppointment() {
-      alert("Appointment scheduling coming soon!");
+      document.getElementById("redistributeResult").classList.add("hidden");
+      document.getElementById("calendarContainer").classList.remove("hidden");
+      loadAgentAppointments();
     }
+    
+    async function loadAgentAppointments() {
+      if (!window.assignedAgentId) {
+        alert("No assigned agent found for scheduling.");
+        return;
+      }
+    
+      const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+      const url = `https://api.followupboss.com/v1/appointments?userId=${window.assignedAgentId}&limit=100&offset=0`;
+    
+      try {
+        const res = await fetch(url, {
+          headers: {
+            "accept": "application/json",
+            "authorization": `Basic ${apiKey}`
+          }
+        });
+    
+        if (!res.ok) throw new Error("Appointments API error");
+    
+        const data = await res.json();
+        const appointments = data.appointments || [];
+    
+        window.agentBusyRanges = parseBusyWindows(appointments);
+        renderMiniCalendar();
+    
+      } catch (e) {
+        console.error(e);
+        alert("Failed to load agent appointments.");
+      }
+    }
+    
+    function parseBusyWindows(appts) {
+      const busy = [];
+    
+      const now = new Date();
+      const twoWeeksOut = new Date();
+      twoWeeksOut.setDate(twoWeeksOut.getDate() + 14);
+    
+      for (const a of appts) {
+        const start = new Date(a.start);
+        const end = new Date(a.end);
+    
+        if (end < now || start > twoWeeksOut) continue;
+    
+        const cushionStart = new Date(start.getTime() - 60 * 60 * 1000);
+        const cushionEnd = new Date(end.getTime() + 60 * 60 * 1000);
+    
+        busy.push({ start: cushionStart, end: cushionEnd });
+      }
+    
+      return busy;
+    }
+    
+    function renderMiniCalendar() {
+      const container = document.getElementById("calendarContainer");
+      container.innerHTML = "<h3>Select a Date:</h3>";
+    
+      const today = new Date();
+      for (let i = 0; i < 14; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+    
+        const label = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    
+        const btn = document.createElement("button");
+        btn.textContent = label;
+        btn.className = "button";
+        btn.style.margin = "5px";
+        btn.onclick = () => renderTimeSlots(date);
+    
+        container.appendChild(btn);
+      }
+    }
+    
+    function renderTimeSlots(date) {
+      document.getElementById("timeSlotsContainer").classList.remove("hidden");
+      document.getElementById("calendarContainer").classList.add("hidden");
+    
+      const container = document.getElementById("timeSlotsContainer");
+      container.innerHTML = `<span class="back-button" onclick="goBackToCalendar()">← Back to Calendar</span>`;
+      container.innerHTML += `<h4>${date.toDateString()}</h4>`;
+    
+      for (let hour = 9; hour <= 18; hour++) {
+        const slotStart = new Date(date);
+        slotStart.setHours(hour, 0, 0, 0);
+    
+        const slotEnd = new Date(slotStart);
+        slotEnd.setHours(hour + 1);
+    
+        const isBusy = window.agentBusyRanges.some(busy =>
+          slotStart < busy.end && slotEnd > busy.start
+        );
+    
+        const slotLabel = slotStart.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    
+        const btn = document.createElement("button");
+        btn.textContent = isBusy ? `${slotLabel} (Busy!)` : slotLabel;
+        btn.className = "button";
+        btn.disabled = isBusy;
+        btn.onclick = () => {
+          if (!isBusy) {
+            alert("Coming Soon!");
+          }
+        };
+    
+        container.appendChild(btn);
+      }
+    }
+    
+    function goBackToCalendar() {
+      document.getElementById("timeSlotsContainer").classList.add("hidden");
+      document.getElementById("calendarContainer").classList.remove("hidden");
+    }
+
 
     
   </script>
