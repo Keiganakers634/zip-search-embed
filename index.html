@@ -10,6 +10,7 @@
       margin: 20px;
       background: #f9f9f9;
       overflow-x: hidden;
+      overflow-y: auto;
     }
 
     .view {
@@ -19,6 +20,8 @@
       width: 100%;
       transform: translateX(100%);
       opacity: 0;
+      pointer-events: none;
+      height: 0;
       transition: transform 0.4s ease, opacity 0.4s ease;
     }
 
@@ -26,6 +29,7 @@
       transform: translateX(0);
       opacity: 1;
       pointer-events: auto;
+      height: auto;
     }
 
     #menuButtons {
@@ -71,11 +75,9 @@
 </head>
 
 <body>
-  <!-- Container for Current User Info -->
-  <div id="currentUser"></div>
-
   <!-- Container for the main menu buttons -->
   <div id="menuButtons" class="view">
+    <div id="currentUser"></div>
     <button class="button" onclick="showView('redistributeView')">Redistribute</button>
     <button class="button" onclick="showView('zipSearchView')">Zip Code Search</button>
     <button class="button" onclick="showView('agentsView')">Show me available agents</button>
@@ -103,7 +105,7 @@
       no-background='false'
       allow-query-params='true'
       query-params=''
-      style='max-width: 900px; height: 500px;'
+      style='max-width: 900px; height: 400px;'
     ></zapier-interfaces-page-embed>
   </div>
 
@@ -155,11 +157,14 @@
           const userName = contextObj?.user?.name || "(Unknown)";
           const userEmail = contextObj?.user?.email?.toLowerCase() || "(Unknown)";
 
-          document.getElementById("currentUser").innerHTML = `
-            <div style="background:#eef; padding:10px; border:1px solid #99f; margin-bottom:20px;">
-              👤 <strong>Current User:</strong> ${userName} (${userEmail})
-            </div>
-          `;
+          const userDiv = document.getElementById("currentUser");
+          if (userDiv) {
+            userDiv.innerHTML = `
+              <div style="background:#eef; padding:10px; border:1px solid #99f; margin-bottom:20px;">
+                👤 <strong>Current User:</strong> ${userName} (${userEmail})
+              </div>
+            `;
+          }
 
           const authorizedEmails = [
             "keigan.akers@robertslack.com",
@@ -215,6 +220,13 @@
       if (newView) {
         newView.classList.add("active");
         activeView = newView;
+
+        // Hide currentUser in sub-views
+        if (viewId !== "menuButtons") {
+          document.getElementById("currentUser").style.display = "none";
+        } else {
+          document.getElementById("currentUser").style.display = "block";
+        }
       }
     }
 
