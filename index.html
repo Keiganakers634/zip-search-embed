@@ -737,9 +737,15 @@
 	    const slotEnd = new Date(slotStart);
 	    slotEnd.setHours(hour + 1);
 	
-	    const available = window.groupAgentAvailability.filter(({ busy }) =>
-	      !busy.some(b => slotStart < b.end && slotEnd > b.start)
-	    );
+	  const available = window.groupAgentAvailability.filter(({ busy }) => {
+	    return !busy.some(b => {
+	      const oneHour = 60 * 60 * 1000;
+	      const startsTooCloseBefore = (slotStart - b.start) > 0 && (slotStart - b.start) < oneHour;
+	      const endsTooCloseAfter = (b.end - slotEnd) > 0 && (b.end - slotEnd) < oneHour;
+	      const overlaps = slotStart < b.end && slotEnd > b.start;
+	      return overlaps || startsTooCloseBefore || endsTooCloseAfter;
+	    });
+	  });
 	
 	    const btn = document.createElement("button");
 	    btn.textContent = `${slotStart.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} - ${available.length} available`;
