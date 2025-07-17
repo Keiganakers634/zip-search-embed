@@ -1405,16 +1405,18 @@
 
 
 	function parseBusyWindows(appointments) {
-	  if (!appointments || appointments.length === 0) {
-		return [];
-	  }
-
-	  return appointments.map(app => ({
-		start: new Date(app.startDate),
-		end: new Date(app.endDate)
-	  }));
+	  const bufferMs = 60 * 60 * 1000; // 1 hour buffer before and after
+	  return appointments.map(appt => {
+	    const start = new Date(appt.startTime);
+	    const end = new Date(appt.endTime);
+	
+	    return {
+	      start: new Date(start.getTime() - bufferMs), // start buffer
+	      end: new Date(end.getTime() + bufferMs)      // end buffer
+	    };
+	  });
 	}
-    
+	    
   </script>
 </body>
 </html>
