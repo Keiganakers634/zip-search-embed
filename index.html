@@ -502,26 +502,55 @@
         console.error(err);
       }
     }
+
+	async function getLatLngForZip(zip) {
+	  const res = await fetch(`https://api.zippopotam.us/us/${zip}`);
+	  if (!res.ok) throw new Error("Failed to get location data for ZIP");
+	  const data = await res.json();
 	
-	function findClosestZipEntry(zip) {
-	  if (zipGroupsData.length === 0) return null;
-
-	  const numericZip = parseInt(zip, 10);
-	  let closest = null;
-	  let minDiff = Infinity;
-
-	  for (const item of zipGroupsData) {
-		const candidateZip = parseInt(item.zip, 10);
-		const diff = Math.abs(candidateZip - numericZip);
-
-		if (diff < minDiff) {
-		  minDiff = diff;
-		  closest = item;
-		}
-	  }
-
-	  return closest;
+	  const place = data.places[0];
+	  return {
+	    lat: parseFloat(place.latitude),
+	    lng: parseFloat(place.longitude)
+	  };
 	}
+	
+	function haversineDistance(lat1, lon1, lat2, lon2) {
+	  const toRad = angle => (angle * Math.PI) / 180;
+	  const R = 6371;
+	  const dLat = toRad(lat2 - lat1);
+	  const dLon = toRad(lon2 - lon1);
+	  const a = Math.sin(dLat / 2) ** 2 +
+	            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+	            Math.sin(dLon / 2) ** 2;
+	  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	  return R * c;
+	}
+	
+	async function findClosestZipEntry(zip) {
+	  try {
+	    const { lat, lng } = await getLatLngForZip(zip);
+	
+	    let closest = null;
+	    let minDistance = Infinity;
+	
+	    for (const entry of zipGroupsData) {
+	      if (!entry.lat || !entry.lng) continue;
+	
+	      const dist = haversineDistance(lat, lng, entry.lat, entry.lng);
+	      if (dist < minDistance) {
+	        minDistance = dist;
+	        closest = entry;
+	      }
+	    }
+	
+	    return closest;
+	  } catch (err) {
+	    console.error("Geolocation lookup failed:", err);
+	    return null;
+	  }
+	}
+
 
 
 	function findGroupByZip(zip) {
