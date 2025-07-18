@@ -565,7 +565,7 @@
         const data = await res.json();
 		renderAgents(entry, data, searchedZip);
       } catch (err) {
-        showBanner("Failed to load agent data.", "error");
+        showBanner("No Group data available for this zip...Try another", "error");
         console.error(err);
         goBack();
       }
