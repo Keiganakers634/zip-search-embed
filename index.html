@@ -687,7 +687,10 @@
 	
 	    const data = await res.json();
 	    const activeAgents = data.users.filter(u => !u.pauseLeadDistribution);
-	
+
+	    // ✅ Show a notification before pulling appointments
+	    showBanner(`Pulling appointment details for ${activeAgents.length} agents in ${entry.group}`, "info");
+		  
 	    // Fetch appointment data for each agent in parallel
 	    const appointmentPromises = activeAgents.map(agent => fetch(`https://api.followupboss.com/v1/appointments?userId=${agent.id}&limit=100&offset=0`, {
 	      headers: {
@@ -700,9 +703,9 @@
 	
 	    window.groupAgentAvailability = results.map(r => ({
 	      agent: r.agent,
-	      busy: parseBusyWindows(r.appointments)
+	      busy: parseBusyWindows(r.appointments, r.agent.id)
 	    }));
-	
+	    showBanner("✅ Appointment availability loaded!", "success");
 	    renderGroupAvailabilityCalendar();
 	
 	  } catch (err) {
@@ -1438,18 +1441,24 @@
 	}
 
 
-	function parseBusyWindows(appointments) {
+	function parseBusyWindows(appointments, agentId) {
 	  const bufferMs = 60 * 60 * 1000; // 1 hour buffer before and after
-	  return appointments.map(appt => {
-	    const start = new Date(appt.startTime);
-	    const end = new Date(appt.endTime);
 	
-	    return {
-	      start: new Date(start.getTime() - bufferMs), // start buffer
-	      end: new Date(end.getTime() + bufferMs)      // end buffer
-	    };
-	  });
+	  return appointments
+	    .filter(appt =>
+	      Array.isArray(appt.invitees) &&
+	      appt.invitees.some(invitee => invitee.userId === agentId)
+	    )
+	    .map(appt => {
+	      const start = new Date(appt.start);
+	      const end = new Date(appt.end);
+	      return {
+	        start: new Date(start.getTime() - bufferMs),
+	        end: new Date(end.getTime() + bufferMs)
+	      };
+	    });
 	}
+
 
 	function showBanner(message, type = "info", duration = 4000) {
 	  const banner = document.getElementById("notificationBanner");
