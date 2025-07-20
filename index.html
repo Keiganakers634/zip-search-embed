@@ -336,6 +336,8 @@
 	      const first = contextObj?.person?.firstName || "";
 	      const last = contextObj?.person?.lastName || "";
 	      window.contextPersonName = `${first} ${last}`.trim();
+	      window.contextPersonStageId = contextObj?.person?.stage?.id || null;
+	      window.contextPersonStageName = contextObj?.person?.stage?.name || null;
 	
 	      window.contextUserId = contextObj?.user?.id || null;
 	      window.contextUserName = contextObj?.user?.name || null;
@@ -1001,13 +1003,65 @@
         }
     
         // Perform the reassignment
-        await executeRedistribution(nextUser, entry, zip);
+        await confirmRedistribution(nextUser, entry, zip);
       } catch (e) {
         console.error(e);
         showBanner("Couldn't pull group details", "error");
         goBack();
       }
     }
+	  
+	async function confirmRedistribution(agent, entry, zip) {
+
+	  window.redistributeAgent = agent;
+	  window.redistributeEntry = entry;
+	  window.redistributeZip = zip;
+	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+	  const personId = window.contextPersonId;
+	
+	  const url = `https://api.followupboss.com/v1/people/${personId}?fields=assignedTo`;
+	
+	  try {
+	    const res = await fetch(url, {
+	      headers: {
+	        "accept": "application/json",
+	        "authorization": `Basic ${apiKey}`
+	      }
+	    });
+	
+	    if (!res.ok) throw new Error("Failed to get current assignment");
+	
+	    const data = await res.json();
+	    const personName = window.contextPersonName || "this lead";
+	    const currentAssignee = data.assignedTo?.name || "Unassigned";
+	
+	    const container = document.getElementById("confirmationContainer") || createConfirmationContainer();
+	    container.innerHTML = `
+	      <span class="back-button" onclick="goBack()">← Back</span>
+	      <h3>Confirm Reassignment</h3>
+	      <p>Are you sure you want to reassign <strong>${personName}</strong><br>
+	      from <strong>${currentAssignee}</strong> to <strong>${agent.name}</strong> in <strong>${entry.group}</strong>?</p>
+	      <button class="button" onclick="executeRedistribution(${JSON.stringify(agent)}, ${JSON.stringify(entry)}, '${zip}')">
+	        I'm Sure
+	      </button>
+	    `;
+	    showView("confirmationContainer");
+	
+	  } catch (err) {
+	    console.error(err);
+	    alert("❌ Failed to confirm reassignment.");
+	    goBack();
+	  }
+	}
+
+	function createConfirmationContainer() {
+	  const div = document.createElement("div");
+	  div.id = "confirmationContainer";
+	  div.className = "view";
+	  document.body.appendChild(div);
+	  return div;
+	}
+
     
     async function executeRedistribution(agent, entry, zip) {
       if (!window.contextPersonId) {
