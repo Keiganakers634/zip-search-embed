@@ -1159,7 +1159,7 @@
 		const data = await res.json();
 		const appointments = data.appointments || [];
 
-		window.agentBusyRanges = parseBusyWindows(appointments) || [];
+		window.agentBusyRanges = parseBusyWindows(appointments, window.assignedAgentId) || [];
 		console.log("✅ Busy ranges loaded:", window.agentBusyRanges);
 
 		document.getElementById("calendarLoading").classList.add("hidden");
