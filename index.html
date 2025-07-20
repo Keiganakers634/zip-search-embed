@@ -1117,7 +1117,9 @@
 	
 	    window.assignedAgentId = userId;
 	    window.assignedAgentName = data.assignedTo?.name || "Assigned Agent";
-	
+
+	    // ✅ Add this line to fix null name in title
+	    window.contextPersonName = data.name || "Unknown Lead";
 	    // Proceed to scheduling
 	    showView("redistributeView");
 	    document.getElementById("calendarLoading").classList.remove("hidden");
