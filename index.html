@@ -189,6 +189,16 @@
 	  cursor: not-allowed;
 	}
 
+	#confirmationContainer {
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  justify-content: center;
+	  text-align: center;
+	  gap: 16px;
+	  margin-top: 40px;
+	}
+
   
 
   </style>
@@ -212,7 +222,7 @@
   <!-- Redistribute View -->
   <div id="redistributeView" class="view">
     <span class="back-button" onclick="goBack()">← Back</span>
-    <div id="redistributeLoading" class="hidden">Redistributing...</div>
+    <div id="redistributeLoading" class="hidden"></div>
     <div id="redistributeResult" class="hidden"></div>
 	<div id="calendarLoading" class="hidden">
 	  <h3 style="text-align:center; margin-top:40px;">
