@@ -181,6 +181,13 @@
 	  opacity: 0;
 	  pointer-events: none;
 	}
+	  
+	.button.busy-slot {
+	  background-color: #e5e7eb; /* Light gray */
+	  color: #6b7280;            /* Muted gray text */
+	  text-decoration: line-through;
+	  cursor: not-allowed;
+	}
 
   
 
@@ -1245,16 +1252,19 @@
 		const slotLabel = slotStart.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
 		const btn = document.createElement("button");
-		btn.textContent = isBusy ? `${slotLabel} (Busy!)` : slotLabel;
+		btn.textContent = slotLabel;
 		btn.className = "button";
-		btn.disabled = isBusy;
-		btn.onclick = () => {
-		  if (!isBusy) {
-			showAppointmentForm(date, slotStart);
-		  }
-		};
-
+		
+		if (isBusy) {
+		  btn.classList.add("busy-slot");
+		  btn.title = "Agent is busy at this time";
+		  btn.onclick = () => alert("This agent is not available at that time.");
+		} else {
+		  btn.onclick = () => showAppointmentForm(date, slotStart);
+		}
+		
 		grid.appendChild(btn);
+
 	  }
 
 	  container.appendChild(grid);
