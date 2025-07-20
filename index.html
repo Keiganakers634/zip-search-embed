@@ -333,7 +333,9 @@
 	      const userEmail = contextObj?.user?.email?.toLowerCase() || "(Unknown)";
 	      window.contextPersonId = contextObj?.person?.id || null;
 	      window.contextPersonZip = contextObj?.person?.postalCode || null;
-	      window.contextPersonName = contextObj?.person?.name || null;
+	      const first = contextObj?.person?.firstName || "";
+	      const last = contextObj?.person?.lastName || "";
+	      window.contextPersonName = `${first} ${last}`.trim();
 	
 	      window.contextUserId = contextObj?.user?.id || null;
 	      window.contextUserName = contextObj?.user?.name || null;
