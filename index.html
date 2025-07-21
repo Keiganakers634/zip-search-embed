@@ -18,11 +18,59 @@
       padding: 10px;
       box-sizing: border-box;
     }
-    
+
     .view.active {
       display: block;
     }
 
+	#menuButtons {
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	  justify-content: flex-start;
+	  margin-top: 10px;
+	
+	  /* Animation styles */
+	  transition: transform 0.4s ease, opacity 0.4s ease;
+	  transform: translateY(0);
+	  opacity: 1;
+	}
+	
+	#menuButtons .button,
+	.button {
+	  display: block;
+	  width: 240px;
+	  margin: 10px 0;
+	  padding: 14px 20px;
+	  font-size: 16px;
+	  font-weight: bold;
+	  color: #ffffff;
+	  background-color: #2563EB;
+	  border: none;
+	  border-radius: 6px;
+	  cursor: pointer;
+	  transition: background-color 0.3s ease;
+	  text-align: center;
+	  text-decoration: none;
+	}
+	
+	#menuButtons .button:hover,
+	.button:hover {
+	  background-color: #1e4bb8;
+	}
+	
+	/* New animation classes */
+	#menuButtons.slide-out {
+	  transform: translateY(100%);
+	  opacity: 0;
+	  pointer-events: none;
+	}
+	
+	#menuButtons.slide-in {
+	  transform: translateY(0%);
+	  opacity: 1;
+	  pointer-events: auto;
+	}
     #menuButtons {
       display: flex;
       flex-direction: column;
@@ -73,17 +121,17 @@
       max-width: 300px;
       margin: 0 auto;
     }
-    
+
     #agentsForm input {
       margin-top: 8px;
       padding: 6px;
       width: 120px;
     }
-    
+
     #agentsForm .button {
       margin-top: 12px;
     }
-    
+
     .or-divider {
       width: 100%;
       text-align: center;
@@ -91,7 +139,7 @@
       margin: 15px 0;
       position: relative;
     }
-    
+
     .or-divider span {
       background: #f9f9f9;
       padding: 0 8px;
@@ -167,24 +215,24 @@
 	  z-index: 1000;
 	  transition: opacity 0.4s ease;
 	}
-	
+
 	#notificationBanner.error {
 	  background-color: #dc2626;
 	}
-	
+
 	#notificationBanner.success {
 	  background-color: #16a34a;
 	}
-	
+
 	#notificationBanner.warning {
 	  background-color: #f59e0b;
 	}
-	
+
 	#notificationBanner.hidden {
 	  opacity: 0;
 	  pointer-events: none;
 	}
-	  
+
 	.button.busy-slot {
 	  background-color: #e5e7eb; /* Light gray */
 	  color: #6b7280;            /* Muted gray text */
@@ -202,7 +250,7 @@
 	  margin-top: 40px;
 	}
 
-  
+
 
   </style>
 
@@ -267,9 +315,9 @@
     <label for="zipInput"><strong>Zip Code:</strong></label>
     <input type="text" id="zipInput" maxlength="5" />
     <button class="button" onclick="searchAgents()">Search</button>
-  
+
     <div class="or-divider"><span>OR</span></div>
-  
+
     <button class="button" onclick="useMostRecentInquiry()">Use Most Recent Inquiry</button>
   </div>
 
@@ -305,7 +353,7 @@
 	  const params = new URLSearchParams(window.location.search);
 	  const contextB64 = params.get("context");
 	  const signature = params.get("signature");
-	
+
 	  if (!contextB64 || !signature) {
 	    document.body.insertAdjacentHTML(
 	      "afterbegin",
@@ -315,11 +363,11 @@
 	    );
 	    return;
 	  }
-	
+
 	  try {
 	    const decodedString = atob(contextB64);
 	    const contextObj = JSON.parse(decodedString);
-	
+
 	    const enc = new TextEncoder();
 	    const key = await crypto.subtle.importKey(
 	      "raw",
@@ -328,20 +376,20 @@
 	      false,
 	      ["sign"]
 	    );
-	
+
 	    const sigBuffer = await crypto.subtle.sign(
 	      "HMAC",
 	      key,
 	      enc.encode(contextB64)
 	    );
-	
+
 	    const calculatedSig = Array.from(new Uint8Array(sigBuffer))
 	      .map(b => b.toString(16).padStart(2, "0"))
 	      .join("");
-	
+
 	    if (calculatedSig === signature) {
 	      console.log("✅ Signature is valid!");
-	
+
 	      const userName = contextObj?.user?.name || "(Unknown)";
 	      const userEmail = contextObj?.user?.email?.toLowerCase() || "(Unknown)";
 	      window.contextPersonId = contextObj?.person?.id || null;
@@ -351,16 +399,16 @@
 	      window.contextPersonName = `${first} ${last}`.trim();
 	      window.contextPersonStageId = contextObj?.person?.stage?.id || null;
 	      window.contextPersonStageName = contextObj?.person?.stage?.name || null;
-	
+
 	      window.contextUserId = contextObj?.user?.id || null;
 	      window.contextUserName = contextObj?.user?.name || null;
-	
+
 	      document.getElementById("currentUser").innerHTML = `
 	        <div style="background:#eef; padding:10px; border:1px solid #99f; margin-bottom:20px;">
 	          👤 <strong>Current User:</strong> ${userName} (${userEmail})
 	        </div>
 	      `;
-	
+
 	      const authorizedEmails = [
 	        "keigan.akers@robertslack.com",
 	        "fubadmin@robertslack.com",
@@ -370,21 +418,21 @@
 		"matt.brown@robertslack.com",
 		"diedre.lambert@robertslack.com"
 	      ];
-	
+
 	      if (authorizedEmails.includes(userEmail)) {
 	        window.isAuthorized = true;
 	        showView("menuButtons");
 	      } else {
 	        window.isAuthorized = false;
 	        document.getElementById("menuButtons").style.display = "none";
-	
+
 	        document.body.insertAdjacentHTML(
 	          "beforeend",
 	          `<div style="background:#ffdddd; padding:15px; color:#800; border:1px solid #f00; margin-top:20px;">
 	            ❌ <strong>Unauthorized user:</strong> This internal tool is currently for RS Admin Staff Only!
 	          </div>`
 	        );
-	
+
 	        console.log("❌ User unauthorized:", userEmail);
 	      }
 	    } else {
@@ -417,9 +465,14 @@
 	    showBanner("Sorry! This Tool is currently only for Admin Staff. More info Coming Soon!", "warning");
 	    return;
 	  }
-	
+
 	  const menuButtons = document.getElementById("menuButtons");
-	
+
+	  // Animate the menu out if we're leaving the main menu
+	  if (viewId !== "menuButtons") {
+	    menuButtons.classList.remove("slide-in");
+	    menuButtons.classList.add("slide-out");
+	  } else {
 	  // Animate the main menu buttons
 	  if (viewId === "menuButtons") {
 	    menuButtons.classList.remove("slide-out");
@@ -437,12 +490,13 @@
 	      }
 	    }, 400); // Matches your CSS transition duration
 	  }
-	
+
 	  // Hide all top-level views
 	  document.querySelectorAll(".view").forEach(v => {
 	    v.classList.remove("active");
 	  });
-	
+
+	  // Clear all inner sub-views for consistent behavior
 	  // Clear sub-view content and hide internal elements
 	  [
 	    "calendarLoading",
@@ -450,6 +504,7 @@
 	    "timeSlotsContainer",
 	    "appointmentFormContainer",
 	    "agentsLoading",
+	    "agentsTableContainer",
 	    "agentsTableContainer"
 	  ].forEach(id => {
 	    const el = document.getElementById(id);
@@ -460,7 +515,7 @@
 	      }
 	    }
 	  });
-	
+
 	  // Activate the requested view
 	  const newView = document.getElementById(viewId);
 	  if (newView) {
@@ -480,7 +535,7 @@
 	    newView.classList.add("active");
 	    activeView = newView;
 	  }
-	
+
 	  // Optional: adjust current user visibility
 	  document.getElementById("currentUser").style.display =
 	    viewId === "menuButtons" ? "block" : "none";
@@ -492,7 +547,7 @@
 
     function goBack() {
       showView("menuButtons");
-    
+
       // Reset the Available Agents view
       document.getElementById("zipInput").value = "";
       document.getElementById("agentsForm").classList.remove("hidden");
@@ -518,10 +573,10 @@
         showBanner("No PersonId Found", "warning");
         return;
       }
-    
+
       const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
       const url = `https://api.followupboss.com/v1/events?limit=10&offset=0&personId=${window.contextPersonId}&type=Inquiry,%20Seller%20Inquiry,%20Property%20Inquiry,%20General%20Inquiry&hasProperty=true`;
-    
+
       try {
         const res = await fetch(url, {
           headers: {
@@ -529,33 +584,33 @@
             "authorization": `Basic ${apiKey}`
           }
         });
-    
+
         if (!res.ok) throw new Error("API error fetching recent inquiries.");
-    
+
         const data = await res.json();
         const events = data.events || [];
-    
+
         if (events.length === 0) {
           showBanner("No Valid property inquiries on this lead! Try typing a zip code", "warning");
           return;
         }
-    
+
         // Find the most recent event with property and property.code
         const sorted = events
           .filter(ev => ev.property && ev.property.code)
           .sort((a, b) => new Date(b.created) - new Date(a.created));
-    
+
         if (sorted.length === 0) {
           showBanner("No Valid property inquiries on this lead! Try typing a zip code", "warning");
           return;
         }
-    
+
 		const zip = sorted[0].property.code;
 		console.log("Using zip code from recent inquiry:", zip);
 		window.lastZipSearch = zip;
 		findGroupByZip(zip);
 
-    
+
       } catch (err) {
         showBanner("Failed to load recent inquiry data for this lead...Try entering a Zip instead", "error");
         console.error(err);
@@ -566,14 +621,14 @@
 	  const res = await fetch(`https://api.zippopotam.us/us/${zip}`);
 	  if (!res.ok) throw new Error("Failed to get location data for ZIP");
 	  const data = await res.json();
-	
+
 	  const place = data.places[0];
 	  return {
 	    lat: parseFloat(place.latitude),
 	    lng: parseFloat(place.longitude)
 	  };
 	}
-	
+
 	function haversineDistance(lat1, lon1, lat2, lon2) {
 	  const toRad = angle => (angle * Math.PI) / 180;
 	  const R = 6371;
@@ -585,24 +640,24 @@
 	  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	  return R * c;
 	}
-	
+
 	async function findClosestZipEntry(zip) {
 	  try {
 	    const { lat, lng } = await getLatLngForZip(zip);
-	
+
 	    let closest = null;
 	    let minDistance = Infinity;
-	
+
 	    for (const entry of zipGroupsData) {
 	      if (!entry.lat || !entry.lng) continue;
-	
+
 	      const dist = haversineDistance(lat, lng, entry.lat, entry.lng);
 	      if (dist < minDistance) {
 	        minDistance = dist;
 	        closest = entry;
 	      }
 	    }
-	
+
 	    return closest;
 	  } catch (err) {
 	    console.error("Geolocation lookup failed:", err);
@@ -705,7 +760,7 @@
 	  document.getElementById("apptSetterOptions").classList.add("hidden");
 	  document.getElementById("helpMeFindForm").classList.remove("hidden");
 	}
-	
+
 	function searchAvailableAgentsByZip() {
 	  const zip = document.getElementById("zipInputHelper").value.trim();
 	  if (!/^\d{5}$/.test(zip)) {
@@ -714,16 +769,16 @@
 	  }
 	  findAgentsWithAvailability(zip);
 	}
-	
+
 	async function useRecentInquiryZipHelper() {
 	  if (!window.contextPersonId) {
 	    alert("Missing personId in context.");
 	    return;
 	  }
-	
+
 	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
 	  const url = `https://api.followupboss.com/v1/events?limit=10&offset=0&personId=${window.contextPersonId}&type=Inquiry,%20Seller%20Inquiry,%20Property%20Inquiry,%20General%20Inquiry&hasProperty=true`;
-	
+
 	  try {
 	    const res = await fetch(url, {
 	      headers: {
@@ -731,38 +786,38 @@
 	        "authorization": `Basic ${apiKey}`
 	      }
 	    });
-	
+
 	    if (!res.ok) throw new Error("Failed to load recent inquiries.");
-	
+
 	    const data = await res.json();
 	    const events = data.events || [];
-	
+
 	    const sorted = events.filter(ev => ev.property?.code).sort((a, b) => new Date(b.created) - new Date(a.created));
-	
+
 	    if (sorted.length === 0) {
 	      showBanner("No valid Property inquiries found for this lead! Try using your own zip code.", "warning");
 	      return;
 	    }
-	
+
 	    const zip = sorted[0].property.code;
 	    findAgentsWithAvailability(zip);
-	
+
 	  } catch (err) {
 	    showBanner("No valid Property inquiries found for this lead! Try using your own zip code.", "warning");
 	    console.error(err);
 	  }
 	}
-	
+
 	async function findAgentsWithAvailability(zip) {
 	  const entry = zipGroupsData.find(item => item.zip === zip) || findClosestZipEntry(zip);
 	  if (!entry) {
 	    showBanner("No matching Groups for this zip code!", "error");
 	    return;
 	  }
-	
+
 	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
 	  const url = `https://api.followupboss.com/v1/groups/${entry.groupId}`;
-	
+
 	  try {
 	    const res = await fetch(url, {
 	      headers: {
@@ -770,15 +825,15 @@
 	        "authorization": `Basic ${apiKey}`
 	      }
 	    });
-	
+
 	    if (!res.ok) throw new Error("Failed to load group data");
-	
+
 	    const data = await res.json();
 	    const activeAgents = data.users.filter(u => !u.pauseLeadDistribution);
 
 	    // ✅ Show a notification before pulling appointments
 	    showBanner(`Pulling appointment details for ${activeAgents.length} agents in ${entry.group}`, "info");
-		  
+
 	    // Fetch appointment data for each agent in parallel
 	    const appointmentPromises = activeAgents.map(agent => fetch(`https://api.followupboss.com/v1/appointments?userId=${agent.id}&limit=100&offset=0`, {
 	      headers: {
@@ -786,16 +841,16 @@
 	        "authorization": `Basic ${apiKey}`
 	      }
 	    }).then(res => res.ok ? res.json() : null).then(json => ({ agent, appointments: json?.appointments || [] })));
-	
+
 	    const results = await Promise.all(appointmentPromises);
-	
+
 	    window.groupAgentAvailability = results.map(r => ({
 	      agent: r.agent,
 	      busy: parseBusyWindows(r.appointments, r.agent.id)
 	    }));
 	    showBanner("✅ Appointment availability loaded!", "success");
 	    renderGroupAvailabilityCalendar();
-	
+
 	  } catch (err) {
 	    showBanner("Hm...Failure to load agent availability", "error");
 	    console.error(err);
@@ -803,17 +858,17 @@
 	}
 	function renderGroupAvailabilityCalendar() {
 	  showView("redistributeView");
-	
+
 	  const container = document.getElementById("calendarContainer");
 	  container.classList.remove("hidden");
 	  container.innerHTML = "<h3>Select a Date:</h3>";
-	
+
 	  const grid = document.createElement("div");
 	  grid.className = "calendar-grid";
-	
+
 	  const today = new Date();
 	  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-	
+
 	  for (const d of dayNames) {
 	    const header = document.createElement("div");
 	    header.style.fontWeight = "bold";
@@ -821,47 +876,47 @@
 	    header.textContent = d;
 	    grid.appendChild(header);
 	  }
-	
+
 	  const weekday = today.getDay();
 	  for (let i = 0; i < weekday; i++) {
 	    grid.appendChild(document.createElement("div"));
 	  }
-	
+
 	  for (let i = 0; i < 14; i++) {
 	    const date = new Date(today);
 	    date.setDate(today.getDate() + i);
-	
+
 	    const btn = document.createElement("button");
 	    btn.textContent = date.getDate();
 	    btn.className = "button";
 	    btn.style.fontSize = "14px";
 	    btn.onclick = () => renderTimeSlotChooser(date);
-	
+
 	    grid.appendChild(btn);
 	  }
-	
+
 	  container.appendChild(grid);
 	}
 
 	function renderTimeSlotChooser(date) {
 	  document.getElementById("calendarContainer").classList.add("hidden");
 	  document.getElementById("timeSlotsContainer").classList.remove("hidden");
-	
+
 	  const container = document.getElementById("timeSlotsContainer");
 	  container.innerHTML = `
 	    <span class="back-button" onclick="goBackToCalendar()">← Back to Calendar</span>
 	    <h4>${date.toDateString()}</h4>
 	  `;
-	
+
 	  const grid = document.createElement("div");
 	  grid.className = "time-grid";
-	
+
 	  for (let hour = 9; hour <= 18; hour++) {
 	    const slotStart = new Date(date);
 	    slotStart.setHours(hour, 0, 0, 0);
 	    const slotEnd = new Date(slotStart);
 	    slotEnd.setHours(hour + 1);
-	
+
 	  const available = window.groupAgentAvailability.filter(({ busy }) => {
 	    return !busy.some(b => {
 	      const oneHour = 60 * 60 * 1000;
@@ -871,38 +926,38 @@
 	      return overlaps || startsTooCloseBefore || endsTooCloseAfter;
 	    });
 	  });
-	
+
 	    const btn = document.createElement("button");
 	    btn.textContent = `${slotStart.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} - ${available.length} available`;
 	    btn.className = "button";
 	    btn.disabled = available.length === 0;
 	    btn.onclick = () => displayAvailableAgentsForSlot(available, slotStart);
-	
+
 	    grid.appendChild(btn);
 	  }
-	
+
 	  container.appendChild(grid);
 	}
 
 	function displayAvailableAgentsForSlot(agentList, slotStart) {
 	  document.getElementById("timeSlotsContainer").classList.add("hidden");
-	
+
 	  const container = document.getElementById("appointmentFormContainer");
 	  container.classList.remove("hidden");
-	
+
 	  const readableTime = slotStart.toLocaleString([], {
 	    weekday: 'short',
 	    hour: 'numeric',
 	    minute: '2-digit'
 	  });
-	
+
 	  let html = `
 	    <span class="back-button" onclick="goBackToCalendar()">← Back</span>
 	    <h4>Available Agents for ${readableTime}</h4>
 	    <table>
 	      <tr><th>Photo</th><th>Name</th><th>Action</th></tr>
 	  `;
-	
+
 	  for (const { agent } of agentList) {
 	    html += `
 	      <tr>
@@ -916,12 +971,12 @@
 	      </tr>
 	    `;
 	  }
-	
+
 	  html += `</table>`;
 	  container.innerHTML = html;
 	}
 
-	  
+
     async function reassignLead(userId, userName) {
       if (!window.contextPersonId) {
         alert("Cannot reassign. PersonId not available.");
@@ -964,24 +1019,24 @@
         console.error(err);
       }
     }
-    
+
     function startRedistribute() {
       document.getElementById("redistributeLoading").classList.remove("hidden");
       document.getElementById("redistributeResult").classList.add("hidden");
-    
+
       getMostRecentZipForRedistribute();
     }
-    
+
     async function getMostRecentZipForRedistribute() {
       if (!window.contextPersonId) {
         alert("Person ID missing from context.");
         goBack();
         return;
       }
-    
+
       const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
       const url = `https://api.followupboss.com/v1/events?limit=10&offset=0&personId=${window.contextPersonId}&type=Inquiry%2C%20Seller%20Inquiry%2C%20Property%20Inquiry%2C%20General%20Inquiry&hasProperty=true`;
-    
+
       try {
         const res = await fetch(url, {
           headers: {
@@ -989,15 +1044,15 @@
             "authorization": `Basic ${apiKey}`
           }
         });
-    
+
         if (!res.ok) throw new Error("Events API error");
-    
+
         const data = await res.json();
-    
+
         const sorted = data.events
           .filter(ev => ev.property?.code)
           .sort((a, b) => new Date(b.created) - new Date(a.created));
-    
+
         if (sorted.length > 0) {
           const zip = sorted[0].property.code;
           console.log("Most recent inquiry zip:", zip);
@@ -1012,7 +1067,7 @@
         goBack();
       }
     }
-    
+
     async function findGroupAndRedistribute(zip) {
 	  let entry = zipGroupsData.find(item => item.zip === zip);
 	  if (!entry) {
@@ -1024,11 +1079,11 @@
 	    }
 	  console.log(`⚠️ No exact match for ${zip}. Using closest zip ${entry.zip}.`);
 	}
-    
+
       // Load group details
       const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
       const url = `https://api.followupboss.com/v1/groups/${entry.groupId}`;
-    
+
       try {
         const res = await fetch(url, {
           headers: {
@@ -1036,20 +1091,20 @@
             "authorization": `Basic ${apiKey}`
           }
         });
-    
+
         if (!res.ok) throw new Error("Group API error");
-    
+
         const data = await res.json();
-    
+
         const nextUserId = data.nextRoundRobinUser;
         const nextUser = data.users.find(u => u.id === nextUserId);
-    
+
         if (!nextUser) {
           showBanner("Couldn't find the next Agent in line!", "error");
           goBack();
           return;
         }
-    
+
         // Perform the reassignment
         await confirmRedistribution(nextUser, entry, zip);
       } catch (e) {
@@ -1058,16 +1113,16 @@
         goBack();
       }
     }
-	  
+
 	async function confirmRedistribution(agent, entry, zip) {
 	  window.redistributeAgent = agent;
 	  window.redistributeEntry = entry;
 	  window.redistributeZip = zip;
 	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
 	  const personId = window.contextPersonId;
-	
+
 	  const url = `https://api.followupboss.com/v1/people/${personId}?fields=assignedTo`;
-	
+
 	  try {
 	    const res = await fetch(url, {
 	      headers: {
@@ -1075,16 +1130,16 @@
 	        "authorization": `Basic ${apiKey}`
 	      }
 	    });
-	
+
 	    if (!res.ok) throw new Error("Failed to get current assignment");
-	
+
 	    const data = await res.json();
 	    const personName = window.contextPersonName || "this lead";
 	    const currentAssignee = data.assignedTo?.name || "Unassigned";
-	
+
 	    const container = document.getElementById("confirmationContainer") || createConfirmationContainer();
 	    container.innerHTML = `
-	      <span class="back-button" onclick="showView('menuButtons')">← Back</span>
+	      <span class="back-button" onclick="showView('redistributeView')">← Back</span>
 	      <h3>Confirm Reassignment</h3>
 	      <p>Are you sure you want to reassign <strong>${personName}</strong><br>
 	      from <strong>${currentAssignee}</strong> to <strong>${agent.name}</strong> in <strong>${entry.group}</strong>?</p>
@@ -1092,9 +1147,9 @@
 	        I'm Sure
 	      </button>
 	    `;
-	    
+
 	    showView("confirmationContainer");
-	
+
 	  } catch (err) {
 	    console.error(err);
 	    alert("❌ Failed to confirm reassignment.");
@@ -1110,24 +1165,24 @@
 	  return div;
 	}
 
-    
+
     async function executeRedistribution(agent, entry, zip) {
       if (!window.contextPersonId) {
         alert("Person ID missing from context.");
         goBack();
         return;
       }
-    
+
       const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
       const url = `https://api.followupboss.com/v1/people/${window.contextPersonId}?mergeTags=false`;
-    
+
 	  const payload = {
 	    assignedUserId: agent.id,
 	    customLastAssignedAgent: agent.name,
 	    customLastAssignedAgentDate: new Date().toISOString(),
 	    customLastAssigningUser: window.contextUserName
   	  };
-    
+
       try {
         const res = await fetch(url, {
           method: "PUT",
@@ -1138,11 +1193,11 @@
           },
           body: JSON.stringify(payload)
         });
-    
+
         if (!res.ok) throw new Error("PUT failed");
-    
+
         const data = await res.json();
-    
+
         if (data.assignedUserId === agent.id) {
           showRedistributeResult(agent, entry, zip);
         } else {
@@ -1154,7 +1209,7 @@
         goBack();
       }
     }
-    
+
     function showRedistributeResult(agent, entry, zip) {
 	  // Ensure calendar views are hidden when showing result
 	  document.getElementById("calendarLoading").classList.add("hidden");
@@ -1164,7 +1219,7 @@
 
       const container = document.getElementById("redistributeResult");
       window.assignedAgentId = agent.id;
-    
+
       container.innerHTML = `
         <p><strong>Redistribution Complete!</strong></p>
         <p>Zip: ${zip}</p>
@@ -1188,7 +1243,7 @@
           </tr>
         </table>
       `;
-    
+
       document.getElementById("redistributeLoading").classList.add("hidden");
       container.classList.remove("hidden");
     }
@@ -1198,10 +1253,10 @@
 	    alert("Missing personId in context.");
 	    return;
 	  }
-	
+
 	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
 	  const url = `https://api.followupboss.com/v1/people/${window.contextPersonId}`;
-	
+
 	  try {
 	    const res = await fetch(url, {
 	      headers: {
@@ -1209,16 +1264,16 @@
 	        "authorization": `Basic ${apiKey}`
 	      }
 	    });
-	
+
 	    if (!res.ok) throw new Error("Failed to load person details");
 	    const data = await res.json();
-	
+
 	    const userId = data.assignedUserId;
 	    if (!userId) {
 	      alert("No assigned user found for this lead.");
 	      return;
 	    }
-	
+
 	    window.assignedAgentId = userId;
 	    window.assignedAgentName = data.assignedTo?.name || "Assigned Agent";
 
@@ -1227,22 +1282,22 @@
 	    // Proceed to scheduling
 	    showView("redistributeView");
 	    document.getElementById("calendarLoading").classList.remove("hidden");
-	
+
 	    setTimeout(loadAgentAppointments, 50);
-	
+
 	  } catch (e) {
 	    console.error(e);
 	    alert("Failed to load assigned agent. Try using 'Help me find one!' instead.");
 	  }
 	}
 
-	  
+
 	function scheduleAppointment() {
 		document.getElementById("redistributeResult").classList.add("hidden");
                 document.getElementById("calendarLoading").classList.remove("hidden");
 
 
-		
+
 		// Call load AFTER setting spinner
 		setTimeout(loadAgentAppointments, 50);
 
@@ -1360,7 +1415,7 @@
 		const btn = document.createElement("button");
 		btn.textContent = slotLabel;
 		btn.className = "button";
-		
+
 		if (isBusy) {
 		  btn.classList.add("busy-slot");
 		  btn.title = "Agent is busy at this time";
@@ -1368,7 +1423,7 @@
 		} else {
 		  btn.onclick = () => showAppointmentForm(date, slotStart);
 		}
-		
+
 		grid.appendChild(btn);
 
 	  }
@@ -1379,10 +1434,10 @@
 	// ✅ ADD IT RIGHT HERE:
 	function showAppointmentForm(date, slotStart) {
 	  document.getElementById("timeSlotsContainer").classList.add("hidden");
-	
+
 	  const container = document.getElementById("appointmentFormContainer");
 	  container.innerHTML = "";
-	
+
 	  const typeOptions = [
 	    "CC Buyer - Consultation",
 	    "CC Buyer - Showing Appointment",
@@ -1391,7 +1446,7 @@
 	    "ISA Buyer - Showing Appt",
 	    "ISA Seller - Consultation"
 	  ];
-	
+
 	  let html = `
 	    <div style="display:flex; flex-direction:column; align-items:center; max-width: 400px; margin: 0 auto;">
 	      <span class="back-button" onclick="goBackToTimeSlots('${date.toISOString()}')">← Back to Time Slots</span>
@@ -1410,7 +1465,7 @@
 	      </button>
 	    </div>
 	  `;
-	
+
 	  container.innerHTML = html;
 	  container.classList.remove("hidden");
 	}
@@ -1424,7 +1479,7 @@
 	async function submitAppointment(startIso) {
 	  const type = document.getElementById("apptType").value;
 	  const details = document.getElementById("apptDetails").value || "";
-	
+
 	const type_map = {
 	    "ISA Buyer - Showing Appt": 6,
 	    "ISA Buyer - Consultation": 5,
@@ -1440,13 +1495,13 @@
 	    "CC Seller - Consultation": 15,
 	    "Buyer - Addl Showings": 16    
 	}
-	
+
 	  const typeId = type_map[type] || null;
-	
+
 	  const start = new Date(startIso);
 	  const end = new Date(start);
 	  end.setHours(start.getHours() + 1);
-	
+
 	  const payload = {
 	    title: `${type} - ${window.assignedAgentName} and ${window.contextPersonName}`,
 	    description: details,
@@ -1468,10 +1523,10 @@
 	      }
 	    ]
 	  };
-	
+
 	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
 	  const url = "https://api.followupboss.com/v1/appointments?sendInvitation=true";
-	
+
 	  try {
 	    const res = await fetch(url, {
 	      method: "POST",
@@ -1482,21 +1537,21 @@
 	      },
 	      body: JSON.stringify(payload)
 	    });
-	
+
 	    if (!res.ok) {
 	      const text = await res.text();
 	      console.error("Appointment create error:", text);
 	      alert("❌ Failed to create appointment: " + text);
 	      return;
 	    }
-	
+
 	    const data = await res.json();
 	    console.log("✅ Appointment created!", data);
 	    alert("✅ Appointment successfully created!");
-	
+
 	    // Go back to main menu or somewhere else
 	    goBack();
-	
+
 	  } catch (err) {
 	    console.error(err);
 	    alert("❌ Failed to create appointment. Check console for details.");
@@ -1588,7 +1643,7 @@
 
 	function parseBusyWindows(appointments, agentId) {
 	  const bufferMs = 60 * 60 * 1000; // 1 hour buffer before and after
-	
+
 	  return appointments
 	    .filter(appt =>
 	      Array.isArray(appt.invitees) &&
@@ -1609,23 +1664,23 @@
 	  const banner = document.getElementById("notificationBanner");
 	  banner.className = ""; // Clear previous state
 	  banner.textContent = message;
-	
+
 	  // Add correct styling class
 	  banner.classList.add(
 	    type === "error" ? "error" :
 	    type === "success" ? "success" :
 	    type === "warning" ? "warning" : "info"
 	  );
-	
+
 	  banner.classList.remove("hidden");
-	
+
 	  // Auto-hide after duration
 	  setTimeout(() => {
 	    banner.classList.add("hidden");
 	  }, duration);
 	}
 
-	    
+
   </script>
 </body>
 </html>
