@@ -1150,9 +1150,10 @@
           console.log("Most recent inquiry zip:", zip);
           findGroupAndRedistribute(zip);
         } else {
-          alert("No recent inquiries with property zip found.");
-          goBack();
-        }
+	  showBanner(
+	    '❌ No valid events for this Lead! Try entering a Zip Code in the "Find available Agents" tool!',
+	    'warning'
+	  );
       } catch (e) {
         console.error(e);
         alert("Error retrieving recent inquiries.");
