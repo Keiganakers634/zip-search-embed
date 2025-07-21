@@ -769,6 +769,7 @@
 	}
 
 	function searchAvailableAgentsByZip() {
+	  document.getElementById("helpMeFindForm").classList.add("hidden");
 	  const zip = document.getElementById("zipInputHelper").value.trim();
 	  if (!/^\d{5}$/.test(zip)) {
 	    showBanner("Please enter a valid zip code.", "warning");
@@ -778,14 +779,17 @@
 	}
 
 	async function useRecentInquiryZipHelper() {
+	  // Hide the helper form
+	  document.getElementById("helpMeFindForm").classList.add("hidden");
+	
 	  if (!window.contextPersonId) {
 	    alert("Missing personId in context.");
 	    return;
 	  }
-
+	
 	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
 	  const url = `https://api.followupboss.com/v1/events?limit=10&offset=0&personId=${window.contextPersonId}&type=Inquiry,%20Seller%20Inquiry,%20Property%20Inquiry,%20General%20Inquiry&hasProperty=true`;
-
+	
 	  try {
 	    const res = await fetch(url, {
 	      headers: {
@@ -793,27 +797,28 @@
 	        "authorization": `Basic ${apiKey}`
 	      }
 	    });
-
+	
 	    if (!res.ok) throw new Error("Failed to load recent inquiries.");
-
+	
 	    const data = await res.json();
 	    const events = data.events || [];
-
+	
 	    const sorted = events.filter(ev => ev.property?.code).sort((a, b) => new Date(b.created) - new Date(a.created));
-
+	
 	    if (sorted.length === 0) {
 	      showBanner("No valid Property inquiries found for this lead! Try using your own zip code.", "warning");
 	      return;
 	    }
-
+	
 	    const zip = sorted[0].property.code;
 	    findAgentsWithAvailability(zip);
-
+	
 	  } catch (err) {
 	    showBanner("No valid Property inquiries found for this lead! Try using your own zip code.", "warning");
 	    console.error(err);
 	  }
 	}
+
 
 	async function findAgentsWithAvailability(zip) {
 	  const entry = zipGroupsData.find(item => item.zip === zip) || findClosestZipEntry(zip);
@@ -1261,10 +1266,13 @@
 	    alert("Missing personId in context.");
 	    return;
 	  }
-
+	
+	  // Hide appointment options to prevent stacking
+	  document.getElementById("apptSetterOptions").classList.add("hidden");
+	
 	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
 	  const url = `https://api.followupboss.com/v1/people/${window.contextPersonId}`;
-
+	
 	  try {
 	    const res = await fetch(url, {
 	      headers: {
@@ -1272,27 +1280,30 @@
 	        "authorization": `Basic ${apiKey}`
 	      }
 	    });
-
+	
 	    if (!res.ok) throw new Error("Failed to load person details");
 	    const data = await res.json();
-
+	
 	    const userId = data.assignedUserId;
 	    if (!userId) {
 	      alert("No assigned user found for this lead.");
 	      return;
 	    }
-
+	
+	    // Store assigned agent details globally
 	    window.assignedAgentId = userId;
 	    window.assignedAgentName = data.assignedTo?.name || "Assigned Agent";
-
-	    // ✅ Add this line to fix null name in title
+	
+	    // ✅ Fix null name in calendar titles
 	    window.contextPersonName = data.name || "Unknown Lead";
-	    // Proceed to scheduling
+	
+	    // Swap to calendar view
 	    showView("redistributeView");
 	    document.getElementById("calendarLoading").classList.remove("hidden");
-
+	
+	    // Load appointments slightly delayed to allow UI rendering
 	    setTimeout(loadAgentAppointments, 50);
-
+	
 	  } catch (e) {
 	    console.error(e);
 	    alert("Failed to load assigned agent. Try using 'Help me find one!' instead.");
