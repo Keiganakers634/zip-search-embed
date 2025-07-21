@@ -794,10 +794,10 @@
             <td><img src="${agent.picture["60x60"]}" alt="${agent.name}" /></td>
             <td>${agent.name}</td>
             <td>
-              <button class="button" style="padding:5px 10px; font-size:12px;"
-                onclick="reassignLead(${agent.id}, '${agent.name}')">
-                ${isNext ? "Next in Line!" : "Reassign"}
-              </button>
+		<button class="button" style="padding:5px 10px; font-size:12px;"
+		  onclick='executeRedistribution(${JSON.stringify(agent)}, ${JSON.stringify(entry)}, "${searchedZip}")'>
+		  ${isNext ? "Next in Line!" : "Reassign"}
+		</button>
             </td>
           </tr>
         `;
@@ -1305,6 +1305,7 @@
       }
     }
 
+	  
     function showRedistributeResult(agent, entry, zip) {
 	  // Ensure calendar views are hidden when showing result
 	  document.getElementById("calendarLoading").classList.add("hidden");
