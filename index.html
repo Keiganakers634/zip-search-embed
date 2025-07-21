@@ -458,6 +458,7 @@
 	    "appointmentFormContainer",
 	    "agentsLoading",
 	    "agentsTableContainer",
+            "confirmationContainer"
 	  ].forEach(id => {
 	    const el = document.getElementById(id);
 	    if (el) {
@@ -1080,11 +1081,9 @@
 	    const container = document.getElementById("confirmationContainer") || createConfirmationContainer();
 	    container.innerHTML = `
 	      <span class="back-button" onclick="goBack()">← Back</span>
-	      <span class="back-button" onclick="showView('redistributeView')">← Back</span>
 	      <h3>Confirm Reassignment</h3>
 	      <p>Are you sure you want to reassign <strong>${personName}</strong><br>
 	      from <strong>${currentAssignee}</strong> to <strong>${agent.name}</strong> in <strong>${entry.group}</strong>?</p>
-	      <button class="button" onclick="executeRedistribution(${JSON.stringify(agent)}, ${JSON.stringify(entry)}, '${zip}')">
 	      <button class="button" onclick='executeRedistribution(window.redistributeAgent, window.redistributeEntry, "${zip}")'>
 	        I'm Sure
 	      </button>
