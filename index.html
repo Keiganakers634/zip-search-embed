@@ -465,39 +465,38 @@
 	    showBanner("Sorry! This Tool is currently only for Admin Staff. More info Coming Soon!", "warning");
 	    return;
 	  }
-
+	
 	  const menuButtons = document.getElementById("menuButtons");
-
+	
 	  // Animate the menu out if we're leaving the main menu
 	  if (viewId !== "menuButtons") {
 	    menuButtons.classList.remove("slide-in");
 	    menuButtons.classList.add("slide-out");
 	  } else {
-	  // Animate the main menu buttons
-	  if (viewId === "menuButtons") {
-	    menuButtons.classList.remove("slide-out");
-	    menuButtons.classList.add("slide-in");
-	    menuButtons.style.display = "flex"; // Restore layout if hidden
-	  } else {
-	    // Trigger animation then delay hiding to allow animation to finish
-	    menuButtons.classList.remove("slide-in");
-	    menuButtons.classList.add("slide-out");
+	    // Animate the main menu buttons
+	    if (viewId === "menuButtons") {
+	      menuButtons.classList.remove("slide-out");
+	      menuButtons.classList.add("slide-in");
+	      menuButtons.style.display = "flex"; // Restore layout if hidden
+	    } else {
+	      // Trigger animation then delay hiding to allow animation to finish
+	      menuButtons.classList.remove("slide-in");
+	      menuButtons.classList.add("slide-out");
 	
-	    setTimeout(() => {
-	      // Only hide if we're still on a non-menu view
-	      if (menuButtons.classList.contains("slide-out")) {
-	        menuButtons.style.display = "none";
-	      }
-	    }, 400); // Matches your CSS transition duration
+	      setTimeout(() => {
+	        if (menuButtons.classList.contains("slide-out")) {
+	          menuButtons.style.display = "none";
+	        }
+	      }, 400);
+	    }
 	  }
-
+	
 	  // Hide all top-level views
 	  document.querySelectorAll(".view").forEach(v => {
 	    v.classList.remove("active");
 	  });
-
-	  // Clear all inner sub-views for consistent behavior
-	  // Clear sub-view content and hide internal elements
+	
+	  // ✅ Clear all inner sub-views for consistent behavior
 	  [
 	    "calendarLoading",
 	    "calendarContainer",
@@ -505,17 +504,22 @@
 	    "appointmentFormContainer",
 	    "agentsLoading",
 	    "agentsTableContainer",
-	    "agentsTableContainer"
+	    "redistributeLoading",
+	    "redistributeResult",
+	    "confirmationContainer",
+	    "helpMeFindForm"
 	  ].forEach(id => {
 	    const el = document.getElementById(id);
 	    if (el) {
 	      el.classList.add("hidden");
-	      if (["agentsTableContainer", "appointmentFormContainer"].includes(id)) {
+	
+	      // Clear dynamic content for views that populate with innerHTML
+	      if (["agentsTableContainer", "calendarContainer", "timeSlotsContainer", "appointmentFormContainer", "redistributeResult", "confirmationContainer"].includes(id)) {
 	        el.innerHTML = "";
 	      }
 	    }
 	  });
-
+	
 	  // Activate the requested view
 	  const newView = document.getElementById(viewId);
 	  if (newView) {
@@ -524,19 +528,6 @@
 	  }
 	
 	  // Show/hide current user banner depending on view
-	  document.getElementById("currentUser").style.display =
-	    viewId === "menuButtons" ? "block" : "none";
-	}
-
-	
-	  // Show the requested view
-	  const newView = document.getElementById(viewId);
-	  if (newView) {
-	    newView.classList.add("active");
-	    activeView = newView;
-	  }
-
-	  // Optional: adjust current user visibility
 	  document.getElementById("currentUser").style.display =
 	    viewId === "menuButtons" ? "block" : "none";
 	}
