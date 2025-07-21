@@ -1207,13 +1207,12 @@
     }
 
 	async function confirmRedistribution(agent, entry, zip) {
-	
 	  window.redistributeAgent = agent;
 	  window.redistributeEntry = entry;
 	  window.redistributeZip = zip;
+	
 	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
 	  const personId = window.contextPersonId;
-	
 	  const url = `https://api.followupboss.com/v1/people/${personId}?fields=assignedTo`;
 	
 	  try {
@@ -1228,12 +1227,15 @@
 	
 	    const data = await res.json();
 	    const personName = window.contextPersonName || "this lead";
-	    const currentAssignee = data.assignedTo?.name || "Unassigned";
 	
-	    // ✅ Ensure the container exists before calling showView
+	    // Use assignedTo directly — if it's an object, fallback to "Unassigned"
+	    const currentAssignee = typeof data.assignedTo === "string"
+	      ? data.assignedTo
+	      : data.assignedTo || "Unassigned";
+	
 	    let container = document.getElementById("confirmationContainer");
 	    if (!container) {
-	      createConfirmationContainer(); // appends it to DOM
+	      createConfirmationContainer(); // adds to DOM
 	      container = document.getElementById("confirmationContainer");
 	    }
 	
@@ -1244,11 +1246,17 @@
 	      <p>Are you sure you want to reassign <strong>${personName}</strong><br>
 	      from <strong>${currentAssignee}</strong> to <strong>${agent.name}</strong> in <strong>${entry.group}</strong>?</p>
 	
-	      <button class="button" onclick='executeRedistribution(window.redistributeAgent, window.redistributeEntry, "${zip}")'>
-	        I'm Sure
-	      </button>
+	      <div style="margin-top: 20px;">
+	        <button class="button" onclick='executeRedistribution(window.redistributeAgent, window.redistributeEntry, "${zip}")'>
+	          I'm Sure
+	        </button>
+	        <button class="button" onclick='goBack()' style="margin-left: 10px;">
+	          Cancel
+	        </button>
+	      </div>
 	    `;
-	    container.classList.remove("hidden"); // ✅ Show it explicitly
+	
+	    container.classList.remove("hidden");
 	
 	  } catch (err) {
 	    console.error(err);
@@ -1256,6 +1264,7 @@
 	    goBack();
 	  }
 	}
+
 
 
 	function createConfirmationContainer() {
