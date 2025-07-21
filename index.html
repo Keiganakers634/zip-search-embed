@@ -1228,7 +1228,7 @@
 	
 	    const data = await res.json();
 	    const personName = window.contextPersonName || "this lead";
-	    const currentAssignee = data.assignedTo? || "Unassigned";
+	    const currentAssignee = data.assignedTo?.name || "Unassigned";
 	
 	    // ✅ Ensure the container exists before calling showView
 	    let container = document.getElementById("confirmationContainer");
@@ -1246,9 +1246,6 @@
 	
 	      <button class="button" onclick='executeRedistribution(window.redistributeAgent, window.redistributeEntry, "${zip}")'>
 	        I'm Sure
-	      </button>
-	      <button class="button" onclick='goBack()' style="margin-left: 10px;">
-	        Cancel
 	      </button>
 	    `;
 	    container.classList.remove("hidden"); // ✅ Show it explicitly
