@@ -545,23 +545,70 @@
 
 
 
-    function goBack() {
-      showView("menuButtons");
-
-      // Reset the Available Agents view
-      document.getElementById("zipInput").value = "";
-      document.getElementById("agentsForm").classList.remove("hidden");
-      document.getElementById("agentsLoading").classList.add("hidden");
-      document.getElementById("agentsTableContainer").classList.add("hidden");
-      document.getElementById("agentsTableContainer").innerHTML = "";
-      const confirmContainer = document.getElementById("confirmationContainer");
-      if (confirmContainer) {
-          confirmContainer.classList.add("hidden");  // Hides it
-          confirmContainer.classList.remove("active");
-          confirmContainer.innerHTML = "";           // Resets content
-      }
-	    
-    }
+	function goBack() {
+	  showView("menuButtons");
+	
+	  // === Clear Global State ===
+	  window.assignedAgentId = null;
+	  window.assignedAgentName = null;
+	  window.groupAgentAvailability = null;
+	  window.redistributeAgent = null;
+	  window.redistributeEntry = null;
+	  window.redistributeZip = null;
+	
+	  // === Reset DOM elements ===
+	  const zipInput = document.getElementById("zipInput");
+	  if (zipInput) zipInput.value = "";
+	
+	  const zipInputHelper = document.getElementById("zipInputHelper");
+	  if (zipInputHelper) zipInputHelper.value = "";
+	
+	  const agentsForm = document.getElementById("agentsForm");
+	  if (agentsForm) agentsForm.classList.remove("hidden");
+	
+	  const agentsLoading = document.getElementById("agentsLoading");
+	  if (agentsLoading) agentsLoading.classList.add("hidden");
+	
+	  const agentsTable = document.getElementById("agentsTableContainer");
+	  if (agentsTable) {
+	    agentsTable.classList.add("hidden");
+	    agentsTable.innerHTML = "";
+	  }
+	
+	  const calendar = document.getElementById("calendarContainer");
+	  if (calendar) {
+	    calendar.classList.add("hidden");
+	    calendar.innerHTML = "";
+	  }
+	
+	  const timeSlots = document.getElementById("timeSlotsContainer");
+	  if (timeSlots) {
+	    timeSlots.classList.add("hidden");
+	    timeSlots.innerHTML = "";
+	  }
+	
+	  const formContainer = document.getElementById("appointmentFormContainer");
+	  if (formContainer) {
+	    formContainer.classList.add("hidden");
+	    formContainer.innerHTML = "";
+	  }
+	
+	  const helpForm = document.getElementById("helpMeFindForm");
+	  if (helpForm) {
+	    helpForm.classList.add("hidden");
+	  }
+	
+	  const apptOptions = document.getElementById("apptSetterOptions");
+	  if (apptOptions) {
+	    apptOptions.classList.remove("hidden");
+	  }
+	
+	  const confirmContainer = document.getElementById("confirmationContainer");
+	  if (confirmContainer) {
+	    confirmContainer.classList.add("hidden");
+	    confirmContainer.innerHTML = "";
+	  }
+	}
 
 
 	function searchAgents() {
@@ -1023,48 +1070,49 @@
 
 
 
-    async function reassignLead(userId, userName) {
-      if (!window.contextPersonId) {
-        alert("Cannot reassign. PersonId not available.");
-        return;
-      }
-
-      const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
-      const url = `https://api.followupboss.com/v1/people/${window.contextPersonId}?mergeTags=false`;
-
+	async function assignAgentToSlot(agentId, agentName, slotStartIso) {
+	  // 1. Update the assigned agent globally for use in appointment form
+	  window.assignedAgentId = agentId;
+	  window.assignedAgentName = agentName;
+	
+	  // 2. Reassign the lead to the selected agent with custom metadata
+	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+	  const personId = window.contextPersonId;
+	  const url = `https://api.followupboss.com/v1/people/${personId}`;
+	
 	  const payload = {
-	    assignedUserId: userId,
-	    customLastAssignedAgent: userName,
+	    assignedUserId: agentId,
+	    customLastAssignedAgent: agentName,
 	    customLastAssignedAgentDate: new Date().toISOString(),
 	    customLastAssigningUser: window.contextUserName
 	  };
-
-      try {
-        const res = await fetch(url, {
-          method: "PUT",
-          headers: {
-            "accept": "application/json",
-            "content-type": "application/json",
-            "authorization": `Basic ${apiKey}`
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (!res.ok) throw new Error("Failed PUT");
-
-        const data = await res.json();
-
-		if (data.assignedUserId === userId) {
-		  // Instead of just going back, show a result view
-		  showAvailableAgentResult(userId, userName);
-		} else {
-		  throw new Error("Response did not confirm assignment.");
-		}
-      } catch (err) {
-        showBanner("That didn't work...Try again, or pick a different agent.", "error");
-        console.error(err);
-      }
-    }
+	
+	  try {
+	    const res = await fetch(url, {
+	      method: "PUT",
+	      headers: {
+	        "accept": "application/json",
+	        "content-type": "application/json",
+	        "authorization": `Basic ${apiKey}`
+	      },
+	      body: JSON.stringify(payload)
+	    });
+	
+	    if (!res.ok) throw new Error("Failed PUT");
+	
+	    const data = await res.json();
+	
+	    if (data.assignedUserId === agentId) {
+	      // Instead of just going back, show a result view
+	      showAvailableAgentResult(agentId, agentName);
+	    } else {
+	      throw new Error("Response did not confirm assignment.");
+	    }
+	  } catch (err) {
+	    showBanner("That didn't work...Try again, or pick a different agent.", "error");
+	    console.error(err);
+	  }
+	}
 
     function startRedistribute() {
       document.getElementById("redistributeLoading").classList.remove("hidden");
