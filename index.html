@@ -1657,6 +1657,28 @@ function showRedistributeResult(agent, entry, zip) {
 	  const end = new Date(start);
 	  end.setHours(start.getHours() + 1);
 
+	// Ensure agent name is accurate from the API before submitting appointment
+	if (!window.assignedAgentName || window.assignedAgentName === "Assigned Agent") {
+	  try {
+	    const personUrl = `https://api.followupboss.com/v1/people/${window.contextPersonId}?fields=assignedUserId,assignedTo`;
+	    const personRes = await fetch(personUrl, {
+	      headers: {
+	        "accept": "application/json",
+	        "authorization": `Basic ${apiKey}`
+	      }
+	    });
+	
+	    if (personRes.ok) {
+	      const personData = await personRes.json();
+	      window.assignedAgentName = personData.assignedTo?.name || "Assigned Agent";
+	    } else {
+	      console.warn("Could not fetch assigned agent name. Using fallback.");
+	    }
+	  } catch (err) {
+	    console.error("Agent name fetch failed:", err);
+	  }
+	}
+
 	  const payload = {
 	    title: `${type} - ${window.assignedAgentName} and ${window.contextPersonName}`,
 	    description: details,
