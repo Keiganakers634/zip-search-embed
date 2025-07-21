@@ -1228,7 +1228,7 @@
 	
 	    const data = await res.json();
 	    const personName = window.contextPersonName || "this lead";
-	    const currentAssignee = data.assignedTo?.name || "Unassigned";
+	    const currentAssignee = data.assignedTo? || "Unassigned";
 	
 	    // ✅ Ensure the container exists before calling showView
 	    let container = document.getElementById("confirmationContainer");
