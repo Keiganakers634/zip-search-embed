@@ -1207,15 +1207,15 @@
     }
 
 	async function confirmRedistribution(agent, entry, zip) {
-
+	
 	  window.redistributeAgent = agent;
 	  window.redistributeEntry = entry;
 	  window.redistributeZip = zip;
 	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
 	  const personId = window.contextPersonId;
-
+	
 	  const url = `https://api.followupboss.com/v1/people/${personId}?fields=assignedTo`;
-
+	
 	  try {
 	    const res = await fetch(url, {
 	      headers: {
@@ -1223,32 +1223,40 @@
 	        "authorization": `Basic ${apiKey}`
 	      }
 	    });
-
+	
 	    if (!res.ok) throw new Error("Failed to get current assignment");
-
+	
 	    const data = await res.json();
 	    const personName = window.contextPersonName || "this lead";
 	    const currentAssignee = data.assignedTo?.name || "Unassigned";
-
-	    const container = document.getElementById("confirmationContainer") || createConfirmationContainer();
+	
+	    // ✅ Ensure the container exists before calling showView
+	    let container = document.getElementById("confirmationContainer");
+	    if (!container) {
+	      createConfirmationContainer(); // appends it to DOM
+	      container = document.getElementById("confirmationContainer");
+	    }
+	
+	    showView("confirmationContainer");
+	
 	    container.innerHTML = `
 	      <h3>Confirm Reassignment</h3>
 	      <p>Are you sure you want to reassign <strong>${personName}</strong><br>
 	      from <strong>${currentAssignee}</strong> to <strong>${agent.name}</strong> in <strong>${entry.group}</strong>?</p>
-
+	
 	      <button class="button" onclick='executeRedistribution(window.redistributeAgent, window.redistributeEntry, "${zip}")'>
 	        I'm Sure
 	      </button>
 	    `;
 	    container.classList.remove("hidden"); // ✅ Show it explicitly
-	    showView("confirmationContainer");
-
+	
 	  } catch (err) {
 	    console.error(err);
 	    alert("❌ Failed to confirm reassignment.");
 	    goBack();
 	  }
 	}
+
 
 	function createConfirmationContainer() {
 	  const div = document.createElement("div");
