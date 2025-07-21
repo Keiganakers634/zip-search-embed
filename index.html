@@ -29,13 +29,13 @@
 	  align-items: center;
 	  justify-content: flex-start;
 	  margin-top: 10px;
-
+	
 	  /* Animation styles */
 	  transition: transform 0.4s ease, opacity 0.4s ease;
 	  transform: translateY(0);
 	  opacity: 1;
 	}
-
+	
 	#menuButtons .button,
 	.button {
 	  display: block;
@@ -53,24 +53,56 @@
 	  text-align: center;
 	  text-decoration: none;
 	}
-
+	
 	#menuButtons .button:hover,
 	.button:hover {
 	  background-color: #1e4bb8;
 	}
-
+	
 	/* New animation classes */
 	#menuButtons.slide-out {
 	  transform: translateY(100%);
 	  opacity: 0;
 	  pointer-events: none;
 	}
-
+	
 	#menuButtons.slide-in {
 	  transform: translateY(0%);
 	  opacity: 1;
 	  pointer-events: auto;
 	}
+    #menuButtons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      margin-top: 10px;
+
+      /* Animation styles */
+      transition: transform 0.4s ease, opacity 0.4s ease;
+      transform: translateY(0);
+      opacity: 1;
+
+      position: relative;
+      z-index: 1;
+    }
+
+    #menuButtons.slide-out {
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+    }
+
+    #menuButtons.slide-in {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+      position: relative;
+    }
 
 
     .back-button {
@@ -441,8 +473,22 @@
 	    menuButtons.classList.remove("slide-in");
 	    menuButtons.classList.add("slide-out");
 	  } else {
+	  // Animate the main menu buttons
+	  if (viewId === "menuButtons") {
 	    menuButtons.classList.remove("slide-out");
 	    menuButtons.classList.add("slide-in");
+	    menuButtons.style.display = "flex"; // Restore layout if hidden
+	  } else {
+	    // Trigger animation then delay hiding to allow animation to finish
+	    menuButtons.classList.remove("slide-in");
+	    menuButtons.classList.add("slide-out");
+	
+	    setTimeout(() => {
+	      // Only hide if we're still on a non-menu view
+	      if (menuButtons.classList.contains("slide-out")) {
+	        menuButtons.style.display = "none";
+	      }
+	    }, 400); // Matches your CSS transition duration
 	  }
 
 	  // Hide all top-level views
@@ -451,6 +497,7 @@
 	  });
 
 	  // Clear all inner sub-views for consistent behavior
+	  // Clear sub-view content and hide internal elements
 	  [
 	    "calendarLoading",
 	    "calendarContainer",
@@ -458,7 +505,7 @@
 	    "appointmentFormContainer",
 	    "agentsLoading",
 	    "agentsTableContainer",
-            "confirmationContainer"
+	    "agentsTableContainer"
 	  ].forEach(id => {
 	    const el = document.getElementById(id);
 	    if (el) {
@@ -469,6 +516,19 @@
 	    }
 	  });
 
+	  // Activate the requested view
+	  const newView = document.getElementById(viewId);
+	  if (newView) {
+	    newView.classList.add("active");
+	    activeView = newView;
+	  }
+	
+	  // Show/hide current user banner depending on view
+	  document.getElementById("currentUser").style.display =
+	    viewId === "menuButtons" ? "block" : "none";
+	}
+
+	
 	  // Show the requested view
 	  const newView = document.getElementById(viewId);
 	  if (newView) {
@@ -1080,15 +1140,17 @@
 
 	    const container = document.getElementById("confirmationContainer") || createConfirmationContainer();
 	    container.innerHTML = `
-	      <span class="back-button" onclick="goBack()">← Back</span>
+
+	      <span class="back-button" onclick="showView('redistributeView')">← Back</span>
 	      <h3>Confirm Reassignment</h3>
 	      <p>Are you sure you want to reassign <strong>${personName}</strong><br>
 	      from <strong>${currentAssignee}</strong> to <strong>${agent.name}</strong> in <strong>${entry.group}</strong>?</p>
+
 	      <button class="button" onclick='executeRedistribution(window.redistributeAgent, window.redistributeEntry, "${zip}")'>
 	        I'm Sure
 	      </button>
 	    `;
-	    
+
 	    showView("confirmationContainer");
 
 	  } catch (err) {
