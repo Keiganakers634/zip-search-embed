@@ -1661,7 +1661,7 @@ function showRedistributeResult(agent, entry, zip) {
 	
 	    if (personRes.ok) {
 	      const personData = await personRes.json();
-	      window.assignedAgentName = personData.assignedTo?.name || "Assigned Agent";
+	      window.assignedAgentName = personData.assignedTo || "Assigned Agent";
 	    } else {
 	      console.warn("Could not fetch assigned agent name. Using fallback.");
 	    }
