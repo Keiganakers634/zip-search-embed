@@ -1306,43 +1306,47 @@
     }
 
 	  
-    function showRedistributeResult(agent, entry, zip) {
+	function showRedistributeResult(agent, entry, zip) {
 	  // Ensure calendar views are hidden when showing result
 	  document.getElementById("calendarLoading").classList.add("hidden");
 	  document.getElementById("calendarContainer").classList.add("hidden");
 	  document.getElementById("timeSlotsContainer").classList.add("hidden");
 	  document.getElementById("appointmentFormContainer").classList.add("hidden");
-
-      const container = document.getElementById("redistributeResult");
-      window.assignedAgentId = agent.id;
-
-      container.innerHTML = `
-        <p><strong>Redistribution Complete!</strong></p>
-        <p>Zip: ${zip}</p>
-        <p>Team: ${entry.team}</p>
-        <p>Group: ${entry.group}</p>
-        <table>
-          <tr>
-            <th>Photo</th>
-            <th>Name</th>
-            <th>Action</th>
-          </tr>
-          <tr>
-            <td><img src="${agent.picture["60x60"]}" alt="${agent.name}" /></td>
-            <td>${agent.name}</td>
-            <td>
-              <button type="button" class="button" style="padding:5px 10px; font-size:12px;"
-                onclick="scheduleAppointment()">
-                Schedule an Appointment
-              </button>
-            </td>
-          </tr>
-        </table>
-      `;
-
-      document.getElementById("redistributeLoading").classList.add("hidden");
-      container.classList.remove("hidden");
-    }
+	
+	  const container = document.getElementById("redistributeResult");
+	  window.assignedAgentId = agent.id;
+	
+	  container.innerHTML = `
+	    <p><strong>Redistribution Complete!</strong></p>
+	    <p>Zip: ${zip}</p>
+	    <p>Team: ${entry.team}</p>
+	    <p>Group: ${entry.group}</p>
+	    <table>
+	      <tr>
+	        <th>Photo</th>
+	        <th>Name</th>
+	        <th>Action</th>
+	      </tr>
+	      <tr>
+	        <td><img src="${agent.picture["60x60"]}" alt="${agent.name}" /></td>
+	        <td>${agent.name}</td>
+	        <td>
+	          <button type="button" class="button" style="padding:5px 10px; font-size:12px;"
+	            onclick="scheduleAppointment()">
+	            Schedule an Appointment
+	          </button>
+	        </td>
+	      </tr>
+	    </table>
+	  `;
+	
+	  document.getElementById("redistributeLoading").classList.add("hidden");
+	
+	  // ✅ Ensure the correct view is active
+	  showView("redistributeView");
+	
+	  container.classList.remove("hidden");
+	}
 
 	async function initApptSetterForAssignedAgent() {
 	  if (!window.contextPersonId) {
