@@ -311,22 +311,22 @@
     <span class="back-button" onclick="goBack()">← Back</span>
     <h2>Available Agents</h2>
 
-  <div id="agentsForm">
-    <label for="zipInput"><strong>Zip Code:</strong></label>
-    <input type="text" id="zipInput" maxlength="5" />
-    <button class="button" onclick="searchAgents()">Search</button>
+    <div id="agentsForm">
+      <label for="zipInput"><strong>Zip Code:</strong></label>
+      <input type="text" id="zipInput" maxlength="5" />
+      <button class="button" onclick="searchAgents()">Search</button>
 
-    <div class="or-divider"><span>OR</span></div>
+      <div class="or-divider"><span>OR</span></div>
 
-    <button class="button" onclick="useMostRecentInquiry()">Use Most Recent Inquiry</button>
-  </div>
+      <button class="button" onclick="useMostRecentInquiry()">Use Most Recent Inquiry</button>
+    </div>
 
     <div id="agentsLoading" class="hidden" style="margin-top:20px;">
       Pulling Agent Details...
     </div>
 
     <div id="agentsTableContainer" class="hidden"></div>
-  </div>
+  </div> <!-- ✅ Moved here to properly wrap all child elements -->
 
   <script>
     let zipGroupsData = [];
