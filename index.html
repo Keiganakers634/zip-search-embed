@@ -23,54 +23,6 @@
       display: block;
     }
 
-	#menuButtons {
-	  display: flex;
-	  flex-direction: column;
-	  align-items: center;
-	  justify-content: flex-start;
-	  margin-top: 10px;
-	
-	  /* Animation styles */
-	  transition: transform 0.4s ease, opacity 0.4s ease;
-	  transform: translateY(0);
-	  opacity: 1;
-	}
-	
-	#menuButtons .button,
-	.button {
-	  display: block;
-	  width: 240px;
-	  margin: 10px 0;
-	  padding: 14px 20px;
-	  font-size: 16px;
-	  font-weight: bold;
-	  color: #ffffff;
-	  background-color: #2563EB;
-	  border: none;
-	  border-radius: 6px;
-	  cursor: pointer;
-	  transition: background-color 0.3s ease;
-	  text-align: center;
-	  text-decoration: none;
-	}
-	
-	#menuButtons .button:hover,
-	.button:hover {
-	  background-color: #1e4bb8;
-	}
-	
-	/* New animation classes */
-	#menuButtons.slide-out {
-	  transform: translateY(100%);
-	  opacity: 0;
-	  pointer-events: none;
-	}
-	
-	#menuButtons.slide-in {
-	  transform: translateY(0%);
-	  opacity: 1;
-	  pointer-events: auto;
-	}
     #menuButtons {
       display: flex;
       flex-direction: column;
@@ -102,6 +54,29 @@
       opacity: 1;
       pointer-events: auto;
       position: relative;
+    }
+
+    #menuButtons .button,
+    .button {
+      display: block;
+      width: 240px;
+      margin: 10px 0;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #ffffff;
+      background-color: #2563EB;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    #menuButtons .button:hover,
+    .button:hover {
+      background-color: #1e4bb8;
     }
 
 
@@ -149,8 +124,6 @@
       font-size: 14px;
     }
 
-
-
     table {
       border-collapse: collapse;
       margin-top: 15px;
@@ -168,93 +141,105 @@
       display: none !important;
     }
 
-	#calendarContainer, #timeSlotsContainer, #calendarLoading {
-	  display: flex;
-	  flex-direction: column;
-	  align-items: center;
-	}
+    #calendarContainer, #timeSlotsContainer, #calendarLoading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-	.calendar-grid {
-	  display: grid;
-	  grid-template-columns: repeat(7, 1fr);
-	  gap: 8px;
-	  margin-top: 20px;
-	}
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-top: 20px;
+    }
 
-	.calendar-grid button {
-	  width: 100%;
-	  padding: 10px 5px;
-	  font-size: 14px;
-	}
+    .calendar-grid button {
+      width: 100%;
+      padding: 10px 5px;
+      font-size: 14px;
+    }
 
-	.time-grid {
-	  display: grid;
-	  grid-template-columns: repeat(5, 1fr);
-	  gap: 8px;
-	  margin-top: 20px;
-	}
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: 20px;
+    }
 
-	.time-grid .button {
-	  width: auto;
-	  min-width: 80px;
-	  max-width: 100px;
-	  padding: 6px 8px;
-	  font-size: 13px;
-	}
+    .time-grid .button {
+      width: auto;
+      min-width: 80px;
+      max-width: 100px;
+      padding: 6px 8px;
+      font-size: 13px;
+    }
 
-	#notificationBanner {
-	  position: fixed;
-	  top: 0;
-	  left: 0;
-	  right: 0;
-	  background-color: #2563EB;
-	  color: white;
-	  text-align: center;
-	  padding: 12px;
-	  font-weight: bold;
-	  z-index: 1000;
-	  transition: opacity 0.4s ease;
-	}
+    #notificationBanner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: #2563EB;
+      color: white;
+      text-align: center;
+      padding: 12px;
+      font-weight: bold;
+      z-index: 1000;
+      transition: opacity 0.4s ease;
+    }
 
-	#notificationBanner.error {
-	  background-color: #dc2626;
-	}
+    #notificationBanner.error {
+      background-color: #dc2626;
+    }
 
-	#notificationBanner.success {
-	  background-color: #16a34a;
-	}
+    #notificationBanner.success {
+      background-color: #16a34a;
+    }
 
-	#notificationBanner.warning {
-	  background-color: #f59e0b;
-	}
+    #notificationBanner.warning {
+      background-color: #f59e0b;
+    }
 
-	#notificationBanner.hidden {
-	  opacity: 0;
-	  pointer-events: none;
-	}
+    #notificationBanner.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
 
-	.button.busy-slot {
-	  background-color: #e5e7eb; /* Light gray */
-	  color: #6b7280;            /* Muted gray text */
-	  text-decoration: line-through;
-	  cursor: not-allowed;
-	}
+    .button.busy-slot {
+      background-color: #e5e7eb;
+      color: #6b7280;
+      text-decoration: line-through;
+      cursor: not-allowed;
+    }
 
-	#confirmationContainer {
-	  display: flex;
-	  flex-direction: column;
-	  align-items: center;
-	  justify-content: center;
-	  text-align: center;
-	  gap: 16px;
-	  margin-top: 40px;
-	}
+    #confirmationContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 16px;
+      margin-top: 40px;
+    }
 
+    /* Support view styles */
+    #supportView textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
 
-
+    #supportThanksView {
+      text-align: center;
+      padding: 20px;
+      font-size: 16px;
+      color: #2563EB;
+    }
   </style>
 
-  <script type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
   <script type="text/javascript" src="https://eia.followupboss.com/embeddedApps-v1.0.1.js"></script>
 </head>
 
@@ -268,6 +253,7 @@
     <button class="button" onclick="showView('redistributeView'); startRedistribute();">⚠️ Instant Assign ⚠️</button>
     <button class="button" onclick="showView('zipSearchView')">📅 Appointment Assistant</button>
     <button class="button" onclick="showView('agentsView')">🔍 Find available agents</button>
+    <button class="button" onclick="showView('supportView')">💬 Support</button>
   </div>
 
   <!-- Redistribute View -->
@@ -327,6 +313,34 @@
 
     <div id="agentsTableContainer" class="hidden"></div>
   </div> <!-- ✅ Moved here to properly wrap all child elements -->
+
+  <!-- Support View -->
+  <div id="supportView" class="view">
+    <span class="back-button" onclick="goBack()">← Back</span>
+    <h2>Need Help?</h2>
+
+    <div style="margin-top: 20px; text-align: center;">
+      <p><strong>Reported by:</strong> <span id="supportUserName">(loading...)</span></p>
+      <p><strong>Email for follow-up:</strong> <span id="supportUserEmail">(loading...)</span></p>
+      <p><strong>Lead:</strong> <span id="supportLeadName">(loading...)</span></p>
+    </div>
+
+    <div style="margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
+      <label for="supportDetails"><strong>Just give us the details:</strong></label>
+      <textarea id="supportDetails" rows="5" style="width: 100%; max-width: 320px; margin-top: 10px; padding: 10px; font-size: 14px;"></textarea>
+      <button class="button" style="margin-top: 16px;" onclick="submitSupport()">Submit</button>
+    </div>
+  </div>
+
+  <!-- Support Thanks View -->
+  <div id="supportThanksView" class="view">
+    <span class="back-button" onclick="goBack()">← Back</span>
+    <h2>Thanks!</h2>
+    <p style="text-align: center;">We've got all the details and will follow up right away.</p>
+    <p style="text-align: center;"><strong>Need immediate support?</strong><br>
+      Call <a href="tel:4072714341">407-271-4341</a> and press 5 when prompted.</p>
+  </div>
+
   <!-- Confirmation View -->
   <div id="confirmationContainer" class="view hidden"></div>
 	
@@ -404,7 +418,11 @@
 
 	      window.contextUserId = contextObj?.user?.id || null;
 	      window.contextUserName = contextObj?.user?.name || null;
+              window.contextUserEmail = contextObj?.user?.email || null;
 
+	      document.getElementById("supportUserName").textContent = window.contextUserName;
+	      document.getElementById("supportUserEmail").textContent = window.contextUserEmail;
+	      document.getElementById("supportLeadName").textContent = window.contextPersonName;
 	      document.getElementById("currentUser").innerHTML = `
 	        <div style="background:#eef; padding:10px; border:1px solid #99f; margin-bottom:20px;">
 	          👤 <strong>Current User:</strong> ${userName} (${userEmail})
@@ -1870,6 +1888,39 @@ function showRedistributeResult(agent, entry, zip) {
 	    banner.classList.add("hidden");
 	  }, duration);
 	}
+
+        function submitSupport() {
+          const details = document.getElementById("supportDetails").value.trim();
+          if (!details) {
+            showBanner("Please enter some details before submitting.", "warning");
+            return;
+          }
+        
+          const payload = {
+            name: window.contextUserName,
+            email: window.contextUserEmail,
+            leadName: window.contextPersonName,
+            leadId: window.contextPersonId,
+            message: details
+          };
+        
+          fetch("https://hooks.zapier.com/hooks/catch/123456/abcde/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          })
+            .then(response => {
+              if (!response.ok) throw new Error("Failed to submit support request.");
+              showView("supportThanksView");
+            })
+            .catch(error => {
+              console.error("Support submission error:", error);
+              showBanner("There was a problem submitting your support request.", "error");
+            });
+        }
+
 
 
   </script>
