@@ -638,7 +638,7 @@
 		return;
 	  }
 	  window.lastZipSearch = zip;
-	  findGroupByZip(zip);
+	  await findGroupByZip(zip);
 	}
 
 
@@ -682,7 +682,7 @@
 		const zip = sorted[0].property.code;
 		console.log("Using zip code from recent inquiry:", zip);
 		window.lastZipSearch = zip;
-		findGroupByZip(zip);
+		await findGroupByZip(zip);
 
 
       } catch (err) {
@@ -741,7 +741,7 @@
 
 
 
-	function findGroupByZip(zip) {
+	async function findGroupByZip(zip) {
 	  if (zipGroupsData.length === 0) {
 		showBanner("Group Data for this Zip is unavailable", "error");
 		return;
