@@ -1906,6 +1906,7 @@ function showRedistributeResult(agent, entry, zip) {
         
           fetch("https://hooks.zapier.com/hooks/catch/7417039/uuuwd4c/", {
             method: "POST",
+	    mode: "cors",
             headers: {
               "Content-Type": "application/json"
             },
