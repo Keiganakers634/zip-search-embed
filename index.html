@@ -626,6 +626,11 @@
 	  // Activate the requested view
 	  const newView = document.getElementById(viewId);
 	  if (newView) {
+	    newView.classList.add("swipe-up-enter");
+
+	    setTimeout(() => {
+	      newView.classList.remove("swipe-up-enter");
+	    }, 400); // Match your animation duration
 	    newView.classList.add("active");
 	    activeView = newView;
 	  }
