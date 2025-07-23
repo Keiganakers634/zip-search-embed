@@ -250,10 +250,10 @@
 
   <!-- Main Menu Buttons -->
   <div id="menuButtons" class="view">
-    <button class="button" onclick="showView('redistributeView'); startRedistribute();">⚠️ Instant Assign ⚠️</button>
-    <button class="button" onclick="showView('zipSearchView')">📅 Appointment Assistant</button>
-    <button class="button" onclick="showView('agentsView')">🔍 Find available agents</button>
-    <button class="button" onclick="showView('supportView')">💬 Support</button>
+    <button id="btnRedistribute">⚠️ Instant Assign ⚠️</button>
+    <button id="btnZipSearch">📅 Appointment Assistant</button>
+    <button id="btnFindAgents">🔍 Find available agents</button>
+    <button id="btnSupport">💬 Support</button>
   </div>
 
   <!-- Redistribute View -->
@@ -1922,6 +1922,16 @@ function showRedistributeResult(agent, entry, zip) {
             });
         }
 
+        // ✅ Add this block right here
+        document.addEventListener("DOMContentLoaded", () => {
+          document.getElementById("btnRedistribute").onclick = () => {
+            showView("redistributeView");
+            startRedistribute();
+          };
+          document.getElementById("btnZipSearch").onclick = () => showView("zipSearchView");
+          document.getElementById("btnFindAgents").onclick = () => showView("agentsView");
+          document.getElementById("btnSupport").onclick = () => showView("supportView");
+        });
 
 
   </script>
