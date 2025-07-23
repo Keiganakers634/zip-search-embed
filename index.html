@@ -777,7 +777,7 @@
 	        }
 	
 	        if (closest) {
-	          showBanner(`⚠️ No exact match for ${zip}. Using closest zip ${closest.zip}.`, "warning");
+	          showBanner("⚠️ No exact match for ${zip}. Using closest zip ${closest.zip}.", "warning");
 	          loadGroupData(closest, zip);
 	        } else {
 	          showBanner("We have no Groups Near this zip code!", "error");
@@ -1221,7 +1221,7 @@
 		  goBack();
 		  return;
 	    }
-	  console.log(`⚠️ No exact match for ${zip}. Using closest zip ${entry.zip}.`);
+	  console.log("⚠️ No exact match for ${zip}. Using closest zip ${entry.zip}.", "error");
 	  }
 
       // Load group details
