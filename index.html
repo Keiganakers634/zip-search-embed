@@ -279,8 +279,14 @@
     <h2>Appointment Setter</h2>
 
     <div id="apptSetterOptions" style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 20px;">
-      <button class="button" onclick="initApptSetterForAssignedAgent()">For this Agent</button>
-      <button class="button" onclick="showHelpMeFindForm()">Help me find one!</button>
+      <button class="button" onclick="initApptSetterForAssignedAgent()" style="display: flex; align-items: center; gap: 8px;">
+        <img src="https://raw.githubusercontent.com/keiganakers634/zip-search-embed/main/single_person.png" alt="Single person" style="height: 20px;" />
+        For this Agent
+      </button>
+      <button class="button" onclick="showHelpMeFindForm()" style="display: flex; align-items: center; gap: 8px;">
+        <img src="https://raw.githubusercontent.com/keiganakers634/zip-search-embed/main/group_person.png" alt="Group of people" style="height: 20px;" />
+        Help me find one!
+      </button>
     </div>
 
     <div id="helpMeFindForm" class="hidden" style="margin-top: 20px; display: flex; flex-direction: column; align-items: center;">
