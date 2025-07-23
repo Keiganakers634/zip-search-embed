@@ -587,7 +587,6 @@
 
 
 	function goBack() {
-	  resetApp();
 	  showView("menuButtons");
 	
 	  // === Clear Global State ===
@@ -1970,28 +1969,6 @@ function showRedistributeResult(agent, entry, zip) {
             });
         }
 
-	function resetApp() {
-	  // Reset globals
-	  window.assignedAgentId = null;
-	  window.assignedAgentName = null;
-	  window.groupAgentAvailability = null;
-	  window.redistributeAgent = null;
-	  window.redistributeEntry = null;
-	  window.redistributeZip = null;
-	
-	  // Reset views
-	  document.querySelectorAll('.view').forEach(el => {
-	    el.classList.add("hidden");
-	    el.classList.remove("active");
-	    el.innerHTML = ""; // if it's a dynamic view
-	  });
-	
-	  // Reset inputs
-	  document.querySelectorAll("input").forEach(input => input.value = "");
-	
-	  // Show default screen
-	  showView("menuButtons");
-	}
 
 
   </script>
