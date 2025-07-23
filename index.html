@@ -94,6 +94,27 @@
       animation: slideUpFadeIn 0.4s ease forwards;
     }
 
+    @keyframes slideDownFadeOut {
+      from {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+    }
+
+    .swipe-up-enter {
+      animation: slideUpFadeIn 0.4s ease forwards;
+      pointer-events: none; /* disable interaction during animation */
+    }
+
+    .swipe-down-exit {
+      animation: slideDownFadeOut 0.3s ease forwards;
+      pointer-events: none; /* disable interaction during animation */
+    }
+	  
     .back-button {
       display: inline-block;
       margin: 0 auto 5px auto;        /* center + spacing below */
@@ -661,17 +682,25 @@
 	  }
 	
 	  const confirmContainer = document.getElementById("confirmationContainer");
-	  if (confirmContainer) {
-	    confirmContainer.classList.add("hidden");
+  	  if (confirmContainer && !confirmContainer.classList.contains("hidden")) {
+	    confirmContainer.classList.add("swipe-down-exit");
+	
+	    setTimeout(() => {
+	      confirmContainer.classList.add("hidden");
+	      confirmContainer.classList.remove("swipe-down-exit");
+	      confirmContainer.innerHTML = "";
+	    }, 300); // match animation duration
+	  } else {
+	    // fallback if container is already hidden
+	    confirmContainer?.classList.add("hidden");
 	    confirmContainer.innerHTML = "";
 	  }
-	  const redistributeResult = document.getElementById("redistributeResult");
-	  if (redistributeResult) {
-	    redistributeResult.classList.add("hidden");
-	    redistributeResult.innerHTML = "";
+	    const redistributeResult = document.getElementById("redistributeResult");
+	    if (redistributeResult) {
+	      redistributeResult.classList.add("hidden");
+	      redistributeResult.innerHTML = "";
+	    }
 	  }
-	}
-
 
 	function searchAgents() {
 	  const zip = document.getElementById("zipInput").value.trim();
