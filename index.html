@@ -250,10 +250,10 @@
 
   <!-- Main Menu Buttons -->
   <div id="menuButtons" class="view">
-    <button id="btnRedistribute">⚠️ Instant Assign ⚠️</button>
-    <button id="btnZipSearch">📅 Appointment Assistant</button>
-    <button id="btnFindAgents">🔍 Find available agents</button>
-    <button id="btnSupport">💬 Support</button>
+    <button class="button" onclick="showView('redistributeView'); startRedistribute();">⚠️ Instant Assign ⚠️</button>
+    <button class="button" onclick="showView('zipSearchView')">📅 Appointment Assistant</button>
+    <button class="button" onclick="showView('agentsView')">🔍 Find available agents</button>
+    <button class="button" onclick="showView('supportView')">💬 Support</button>
   </div>
 
   <!-- Redistribute View -->
@@ -304,7 +304,7 @@
 
       <div class="or-divider"><span>OR</span></div>
 
-      <button class="button" onclick="(async () => { await useMostRecentInquiry(); })()">Use Most Recent Inquiry</button>
+      <button class="button" onclick="useMostRecentInquiry()">Use Most Recent Inquiry</button>
     </div>
 
     <div id="agentsLoading" class="hidden" style="margin-top:20px;">
@@ -480,7 +480,7 @@
 	}
 
 
-
+    verifyContextAndShowData();
 
     let activeView = null;
 
@@ -556,7 +556,7 @@
 	    viewId === "menuButtons" ? "block" : "none";
 	}
 
-    verifyContextAndShowData();
+
 
 
 
@@ -638,7 +638,7 @@
 		return;
 	  }
 	  window.lastZipSearch = zip;
-	  await findGroupByZip(zip);
+	  findGroupByZip(zip);
 	}
 
 
@@ -682,7 +682,7 @@
 		const zip = sorted[0].property.code;
 		console.log("Using zip code from recent inquiry:", zip);
 		window.lastZipSearch = zip;
-		await findGroupByZip(zip);
+		findGroupByZip(zip);
 
 
       } catch (err) {
@@ -741,7 +741,7 @@
 
 
 
-	async function findGroupByZip(zip) {
+	function findGroupByZip(zip) {
 	  if (zipGroupsData.length === 0) {
 		showBanner("Group Data for this Zip is unavailable", "error");
 		return;
@@ -751,7 +751,7 @@
 	  if (exactEntry) {
 		loadGroupData(exactEntry, zip);
 	  } else {
-		const closestEntry = await findClosestZipEntry(zip);
+		const closestEntry = findClosestZipEntry(zip);
 		if (closestEntry) {
 		  showBanner(`⚠️ No exact match for ${zip}. Using closest zip ${closestEntry.zip}.`, "warning");
 		  loadGroupData(closestEntry, zip);
@@ -1922,16 +1922,6 @@ function showRedistributeResult(agent, entry, zip) {
             });
         }
 
-        // ✅ Add this block right here
-        document.addEventListener("DOMContentLoaded", () => {
-          document.getElementById("btnRedistribute").onclick = () => {
-            showView("redistributeView");
-            startRedistribute();
-          };
-          document.getElementById("btnZipSearch").onclick = () => showView("zipSearchView");
-          document.getElementById("btnFindAgents").onclick = () => showView("agentsView");
-          document.getElementById("btnSupport").onclick = () => showView("supportView");
-        });
 
 
   </script>
