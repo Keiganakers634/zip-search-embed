@@ -743,23 +743,44 @@
 
 	function findGroupByZip(zip) {
 	  if (zipGroupsData.length === 0) {
-		showBanner("Group Data for this Zip is unavailable", "error");
-		return;
+	    showBanner("Group Data for this Zip is unavailable", "error");
+	    return;
 	  }
-
+	
 	  const exactEntry = zipGroupsData.find(item => item.zip === zip);
 	  if (exactEntry) {
-		loadGroupData(exactEntry, zip);
+	    loadGroupData(exactEntry, zip);
 	  } else {
-		const closestEntry = findClosestZipEntry(zip);
-		if (closestEntry) {
-		  showBanner(`⚠️ No exact match for ${zip}. Using closest zip ${closestEntry.zip}.`, "warning");
-		  loadGroupData(closestEntry, zip);
-		} else {
-		  showBanner("We have no Groups Near this zip code!", "error");
-		}
+	    // ✅ Offload the async work to a dedicated async function
+	    (async () => {
+	      try {
+	        const { lat, lng } = await getLatLngForZip(zip);
+	        let closest = null;
+	        let minDistance = Infinity;
+	
+	        for (const entry of zipGroupsData) {
+	          if (!entry.lat || !entry.lng) continue;
+	          const dist = haversineDistance(lat, lng, entry.lat, entry.lng);
+	          if (dist < minDistance) {
+	            minDistance = dist;
+	            closest = entry;
+	          }
+	        }
+	
+	        if (closest) {
+	          showBanner(`⚠️ No exact match for ${zip}. Using closest zip ${closest.zip}.`, "warning");
+	          loadGroupData(closest, zip);
+	        } else {
+	          showBanner("We have no Groups Near this zip code!", "error");
+	        }
+	      } catch (err) {
+	        console.error("Zip lookup failed:", err);
+	        showBanner("We couldn't get location info for that ZIP code.", "error");
+	      }
+	    })(); // 👈 Immediately Invoked Async Function Expression (IIFE)
 	  }
 	}
+
 
 
     async function loadGroupData(entry, searchedZip) {
@@ -888,7 +909,7 @@
 
 
 	async function findAgentsWithAvailability(zip) {
-	  const entry = zipGroupsData.find(item => item.zip === zip) || findClosestZipEntry(zip);
+	  const entry = zipGroupsData.find(item => item.zip === zip) || await findClosestZipEntry(zip);
 	  if (!entry) {
 	    showBanner("No matching Groups for this zip code!", "error");
 	    return;
@@ -1185,7 +1206,7 @@
     async function findGroupAndRedistribute(zip) {
 	  let entry = zipGroupsData.find(item => item.zip === zip);
 	  if (!entry) {
-	    entry = findClosestZipEntry(zip);
+	    entry = await findClosestZipEntry(zip);
 	    if (!entry) {
 	  	  alert("No matching group found for this zip code.");
 		  goBack();
