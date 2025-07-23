@@ -304,7 +304,7 @@
 
       <div class="or-divider"><span>OR</span></div>
 
-      <button class="button" onclick="useMostRecentInquiry()">Use Most Recent Inquiry</button>
+      <button class="button" onclick="(async () => { await useMostRecentInquiry(); })()">Use Most Recent Inquiry</button>
     </div>
 
     <div id="agentsLoading" class="hidden" style="margin-top:20px;">
