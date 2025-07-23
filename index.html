@@ -79,6 +79,20 @@
       background-color: #1e4bb8;
     }
 
+    @keyframes slideUpFadeIn {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .swipe-up-enter {
+      animation: slideUpFadeIn 0.4s ease forwards;
+    }
 
     .back-button {
       display: inline-block;
@@ -224,6 +238,8 @@
     }
 
     #confirmationContainer {
+      transition: opacity 0.3s ease;
+      will-change: transform, opacity;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -1182,7 +1198,6 @@
 	}
 
     function startRedistribute() {
-      document.getElementById("redistributeLoading").classList.remove("hidden");
       document.getElementById("redistributeResult").classList.add("hidden");
 
       getMostRecentZipForRedistribute();
@@ -1309,6 +1324,7 @@
 	    }
 	
 	    showView("confirmationContainer");
+
 	
 	    container.innerHTML = `
 	      <h3>Confirm Reassignment</h3>
@@ -1326,6 +1342,8 @@
 	    `;
 	
 	    container.classList.remove("hidden");
+	    container.classList.add("swipe-up-enter");
+	    setTimeout(() => container.classList.remove("swipe-up-enter"), 400);
 	
 	  } catch (err) {
 	    console.error(err);
