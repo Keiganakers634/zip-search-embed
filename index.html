@@ -361,7 +361,7 @@
       })
       .catch(err => {
         console.error("Error loading zipGroupsData:", err);
-        showBanner("Failed to load Group Data. Try again.", "error")
+        showBanner("Hmm...Something is wrong. Try reloading the page", "error")
       });
 
 	async function verifyContextAndShowData() {
@@ -1217,11 +1217,11 @@
 	  if (!entry) {
 	    entry = await findClosestZipEntry(zip);
 	    if (!entry) {
-	  	  alert("No matching group found for this zip code.");
+	  	  showBanner("This Zip code is too far from our Agents!", "error");
 		  goBack();
 		  return;
 	    }
-	  console.log(`⚠️ No exact match for ${zip}. Using closest zip ${entry.zip}.`);
+	  showBanner("⚠️ No exact match for ${zip}. Using closest zip ${entry.zip}, "error");
 	}
 
       // Load group details
