@@ -219,8 +219,9 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      gap: 16px;
-      margin-top: 40px;
+      gap: 12px;               /* slightly reduced spacing */
+      margin-top: 20px;        /* reduced from 40px */
+      padding: 10px 20px;      /* optional: tighter padding */
     }
 
     /* Support view styles */
@@ -1298,7 +1299,7 @@
 	      <p>Are you sure you want to reassign <strong>${personName}</strong><br>
 	      from <strong>${currentAssignee}</strong> to <strong>${agent.name}</strong> in <strong>${entry.group}</strong>?</p>
 	
-	      <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+	      <div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;">
 	        <button class="button" onclick='goBack()' style="background-color: #dc2626; color: white;">
 	          ⬅️ Cancel ❌
 	        </button>
