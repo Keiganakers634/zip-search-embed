@@ -561,21 +561,11 @@
 
 
 	function showView(viewId) {
-	  // Skip authorization check if we're showing the menu buttons
-	  // or if we're not yet initialized (during initial load)
-	  if (typeof window.isAuthorized === 'undefined' && viewId !== "menuButtons") {
-	    // Wait for verification to complete
-	    setTimeout(() => showView(viewId), 100);
-	    return;
-	  }
-	
-	  // Now perform the authorization check
 	  if (!window.isAuthorized && viewId !== "menuButtons") {
 	    showBanner("Sorry! This Tool is currently only for Admin Staff. More info Coming Soon!", "warning");
 	    return;
 	  }
 	
-	  // Rest of your existing showView implementation
 	  const menuButtons = document.getElementById("menuButtons");
 	  const newView = document.getElementById(viewId);
 	  const previousView = activeView;
@@ -640,6 +630,21 @@
 	      newView.style.top = "";
 	    }, 400);
 	  }
+	
+	  // Handle previous view exit animation
+	  if (previousView && previousView !== newView) {
+	    previousView.classList.remove("swipe-up-enter");
+	    previousView.classList.add("swipe-down-exit");
+	
+	    setTimeout(() => {
+	      previousView.classList.remove("active", "swipe-down-exit");
+	    }, 300); // Matches your 0.3s exit animation
+	  }
+	
+	  // Toggle current user visibility
+	  document.getElementById("currentUser").style.display =
+	    viewId === "menuButtons" ? "block" : "none";
+	}
 	
 	  // Handle previous view exit animation
 	  if (previousView && previousView !== newView) {
