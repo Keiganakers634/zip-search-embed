@@ -559,8 +559,6 @@
 	}
 
 
-    verifyContextAndShowData();
-
 	function showView(viewId) {
 	  if (!window.isAuthorized && viewId !== "menuButtons") {
 	    showBanner("Sorry! This Tool is currently only for Admin Staff. More info Coming Soon!", "warning");
@@ -570,13 +568,6 @@
 	  const menuButtons = document.getElementById("menuButtons");
 	  const newView = document.getElementById(viewId);
 	  const previousView = activeView;
-	
-	  // Hide all views first (except the one we're switching to)
-	  document.querySelectorAll('.view').forEach(view => {
-	    if (view.id !== viewId) {
-	      view.classList.remove('active');
-	    }
-	  });
 	
 	  // Handle menu buttons animation
 	  if (viewId === "menuButtons") {
@@ -611,24 +602,43 @@
 	    }
 	  });
 	
-	  // Show the new view with animation
+	  // Handle view transitions
 	  if (newView) {
-	    newView.classList.remove("swipe-up-enter");
-	    newView.classList.remove("swipe-down-exit");
-	    newView.classList.add("active");
-	    
-	    // Force reflow to ensure animation plays
+	    // Prepare the new view
+	    newView.classList.remove("hidden");
+	    newView.classList.remove("swipe-up-enter", "swipe-down-exit");
+	    newView.style.position = "absolute"; // Match your CSS
+	    newView.style.width = "100%";
+	    newView.style.left = "0";
+	    newView.style.top = "0";
+	
+	    // Force reflow before animation
 	    void newView.offsetWidth;
-	    
+	
+	    // Start enter animation
 	    newView.classList.add("swipe-up-enter");
-	    
+	    newView.classList.add("active");
+	    activeView = newView;
+	
+	    // Clean up after animation
 	    setTimeout(() => {
 	      newView.classList.remove("swipe-up-enter");
+	      newView.style.position = "";
+	      newView.style.width = "";
+	      newView.style.left = "";
+	      newView.style.top = "";
 	    }, 400);
 	  }
 	
-	  // Update current active view
-	  activeView = newView;
+	  // Handle previous view exit animation
+	  if (previousView && previousView !== newView) {
+	    previousView.classList.remove("swipe-up-enter");
+	    previousView.classList.add("swipe-down-exit");
+	
+	    setTimeout(() => {
+	      previousView.classList.remove("active", "swipe-down-exit");
+	    }, 300); // Matches your 0.3s exit animation
+	  }
 	
 	  // Toggle current user visibility
 	  document.getElementById("currentUser").style.display =
