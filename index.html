@@ -595,9 +595,9 @@
 	  }
 	
 	  // Hide all top-level views
-	  document.querySelectorAll(".view").forEach(v => {
-	    v.classList.remove("active");
-	  });
+	  // ✅ Save reference to previous active view
+	  const previousView = activeView;
+	  const newView = document.getElementById(viewId);
 	
 	  // ✅ Clear all inner sub-views for consistent behavior
 	  [
@@ -623,19 +623,27 @@
 	    }
 	  });
 	
-	  // Activate the requested view
-	  const newView = document.getElementById(viewId);
+	  // ✅ Add animation class
 	  if (newView) {
 	    newView.classList.add("swipe-up-enter");
-
+	
 	    setTimeout(() => {
 	      newView.classList.remove("swipe-up-enter");
-	    }, 400); // Match your animation duration
+	    }, 400); // Match your animation
+	
+	    // ✅ Set new view as active immediately
 	    newView.classList.add("active");
 	    activeView = newView;
 	  }
 	
-	  // Show/hide current user banner depending on view
+	  // ✅ Remove previous view’s active class *after* short delay
+	  if (previousView && previousView !== newView) {
+	    setTimeout(() => {
+	      previousView.classList.remove("active");
+	    }, 100); // Slight delay to allow smooth transition
+	  }
+	
+	  // Toggle current user visibility
 	  document.getElementById("currentUser").style.display =
 	    viewId === "menuButtons" ? "block" : "none";
 	}
