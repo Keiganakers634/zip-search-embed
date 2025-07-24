@@ -561,8 +561,6 @@
 
     verifyContextAndShowData();
 
-    let activeView = null;
-
 	function showView(viewId) {
 	  if (!window.isAuthorized && viewId !== "menuButtons") {
 	    showBanner("Sorry! This Tool is currently only for Admin Staff. More info Coming Soon!", "warning");
@@ -570,36 +568,27 @@
 	  }
 	
 	  const menuButtons = document.getElementById("menuButtons");
+	  const newView = document.getElementById(viewId);
+	  const previousView = activeView;
 	
-	  // Animate the menu out if we're leaving the main menu
-	  if (viewId !== "menuButtons") {
+	  // Hide all views first (except the one we're switching to)
+	  document.querySelectorAll('.view').forEach(view => {
+	    if (view.id !== viewId) {
+	      view.classList.remove('active');
+	    }
+	  });
+	
+	  // Handle menu buttons animation
+	  if (viewId === "menuButtons") {
+	    menuButtons.classList.remove("slide-out");
+	    menuButtons.classList.add("slide-in");
+	    menuButtons.style.display = "flex";
+	  } else {
 	    menuButtons.classList.remove("slide-in");
 	    menuButtons.classList.add("slide-out");
-	  } else {
-	    // Animate the main menu buttons
-	    if (viewId === "menuButtons") {
-	      menuButtons.classList.remove("slide-out");
-	      menuButtons.classList.add("slide-in");
-	      menuButtons.style.display = "flex"; // Restore layout if hidden
-	    } else {
-	      // Trigger animation then delay hiding to allow animation to finish
-	      menuButtons.classList.remove("slide-in");
-	      menuButtons.classList.add("slide-out");
-	
-	      setTimeout(() => {
-	        if (menuButtons.classList.contains("slide-out")) {
-	          menuButtons.style.display = "none";
-	        }
-	      }, 400);
-	    }
 	  }
 	
-	  // Hide all top-level views
-	  // ✅ Save reference to previous active view
-	  const previousView = activeView;
-	  const newView = document.getElementById(viewId);
-	
-	  // ✅ Clear all inner sub-views for consistent behavior
+	  // Clear all inner sub-views for consistent behavior
 	  [
 	    "calendarLoading",
 	    "calendarContainer",
@@ -615,33 +604,31 @@
 	    const el = document.getElementById(id);
 	    if (el) {
 	      el.classList.add("hidden");
-	
-	      // Clear dynamic content for views that populate with innerHTML
-	      if (["agentsTableContainer", "calendarContainer", "timeSlotsContainer", "appointmentFormContainer", "redistributeResult", "confirmationContainer"].includes(id)) {
+	      if (["agentsTableContainer", "calendarContainer", "timeSlotsContainer", 
+	           "appointmentFormContainer", "redistributeResult", "confirmationContainer"].includes(id)) {
 	        el.innerHTML = "";
 	      }
 	    }
 	  });
 	
-	  // ✅ Add animation class
+	  // Show the new view with animation
 	  if (newView) {
+	    newView.classList.remove("swipe-up-enter");
+	    newView.classList.remove("swipe-down-exit");
+	    newView.classList.add("active");
+	    
+	    // Force reflow to ensure animation plays
+	    void newView.offsetWidth;
+	    
 	    newView.classList.add("swipe-up-enter");
-	
+	    
 	    setTimeout(() => {
 	      newView.classList.remove("swipe-up-enter");
-	    }, 400); // Match your animation
-	
-	    // ✅ Set new view as active immediately
-	    newView.classList.add("active");
-	    activeView = newView;
+	    }, 400);
 	  }
 	
-	  // ✅ Remove previous view’s active class *after* short delay
-	  if (previousView && previousView !== newView) {
-	    setTimeout(() => {
-	      previousView.classList.remove("active");
-	    }, 100); // Slight delay to allow smooth transition
-	  }
+	  // Update current active view
+	  activeView = newView;
 	
 	  // Toggle current user visibility
 	  document.getElementById("currentUser").style.display =
