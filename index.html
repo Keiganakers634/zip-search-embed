@@ -841,14 +841,13 @@
 	
 	  const zipStr = zip.toString().padStart(5, "0");
 	  const exactEntry = zipGroupsData.find(item => item.zip.toString().padStart(5, "0") === zipStr);
-
+	
 	  if (exactEntry) {
-	    loadGroupData(exactEntry, zip);
+	    loadGroupData(exactEntry, zipStr);
 	  } else {
-	    // ✅ Offload the async work to a dedicated async function
 	    (async () => {
 	      try {
-	        const { lat, lng } = await getLatLngForZip(zip);
+	        const { lat, lng } = await getLatLngForZip(zipStr);
 	        let closest = null;
 	        let minDistance = Infinity;
 	
@@ -862,8 +861,8 @@
 	        }
 	
 	        if (closest) {
-	          showBanner(`⚠️ No exact match for ${zip}. Using closest zip ${closest.zip}.`, "warning");
-	          loadGroupData(closest, zip);
+	          showBanner(`⚠️ No exact match for ${zipStr}. Using closest zip ${closest.zip}.`, "warning");
+	          loadGroupData(closest, zipStr);
 	        } else {
 	          showBanner("We have no Groups Near this zip code!", "error");
 	        }
@@ -871,7 +870,7 @@
 	        console.error("Zip lookup failed:", err);
 	        showBanner("We couldn't get location info for that ZIP code.", "error");
 	      }
-	    })(); // 👈 Immediately Invoked Async Function Expression (IIFE)
+	    })();
 	  }
 	}
 
