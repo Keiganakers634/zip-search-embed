@@ -839,7 +839,9 @@
 	    return;
 	  }
 	
-	  const exactEntry = zipGroupsData.find(item => item.zip === zip);
+	  const zipStr = zip.toString().padStart(5, "0");
+	  const exactEntry = zipGroupsData.find(item => item.zip.toString().padStart(5, "0") === zipStr);
+
 	  if (exactEntry) {
 	    loadGroupData(exactEntry, zip);
 	  } else {
@@ -860,7 +862,7 @@
 	        }
 	
 	        if (closest) {
-	          showBanner('⚠️ No exact match for ${zip}. Using closest zip ${closest.zip}.', "warning");
+	          showBanner(`⚠️ No exact match for ${zip}. Using closest zip ${closest.zip}.`, "warning");
 	          loadGroupData(closest, zip);
 	        } else {
 	          showBanner("We have no Groups Near this zip code!", "error");
