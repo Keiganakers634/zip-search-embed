@@ -39,23 +39,6 @@
       z-index: 1;
     }
 
-    #menuButtons.slide-out {
-      transform: translateY(-100%);
-      opacity: 0;
-      pointer-events: none;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-    }
-
-    #menuButtons.slide-in {
-      transform: translateY(0);
-      opacity: 1;
-      pointer-events: auto;
-      position: relative;
-    }
-
     #menuButtons .button,
     .button {
       display: block;
@@ -90,38 +73,52 @@
       }
     }
 
-    .swipe-up-enter {
-      animation: slideUpFadeIn 0.4s ease forwards;
-    }
-
-    @keyframes slideDownFadeOut {
-      from {
-        transform: translateY(0);
-        opacity: 1;
-      }
-      to {
-        transform: translateY(100%);
-        opacity: 0;
-      }
-    }
-
-    .swipe-up-enter {
-      animation: slideUpFadeIn 0.4s ease forwards;
-      pointer-events: none; /* disable interaction during animation */
-    }
-
-    .swipe-down-exit {
-      animation: slideDownFadeOut 0.3s ease forwards;
-      pointer-events: none; /* disable interaction during animation */
-    }
-
-    .swipe-up-enter,
-    .swipe-down-exit {
-    position: absolute;
-      width: 100%;
-      left: 0;
-      top: 0;
-    }
+		/* Enters from bottom when returning to menuButtons */
+		.swipe-down-enter {
+		  animation: slideDownFadeIn 0.4s ease forwards;
+		  pointer-events: none;
+		}
+		
+		/* Exits up when leaving menuButtons */
+		.swipe-up-exit {
+		  animation: slideUpFadeOut 0.3s ease forwards;
+		  pointer-events: none;
+		}
+		
+		/* Animations */
+		@keyframes slideDownFadeIn {
+		  from {
+		    transform: translateY(100%);
+		    opacity: 0;
+		  }
+		  to {
+		    transform: translateY(0);
+		    opacity: 1;
+		  }
+		}
+		
+		@keyframes slideUpFadeOut {
+		  from {
+		    transform: translateY(0);
+		    opacity: 1;
+		  }
+		  to {
+		    transform: translateY(-100%);
+		    opacity: 0;
+		  }
+		}
+		
+		/* Optional: keep all animated views layered right */
+		.swipe-up-enter,
+		.swipe-up-exit,
+		.swipe-down-enter,
+		.swipe-down-exit {
+		  position: absolute;
+		  width: 100%;
+		  left: 0;
+		  top: 0;
+		  z-index: 10;
+		}
 	  
     .back-button {
       display: inline-block;
@@ -567,81 +564,71 @@
 
     let activeView = null;
 
-	function showView(viewId) {
-	  if (!window.isAuthorized && viewId !== "menuButtons") {
-	    showBanner("Sorry! This Tool is currently only for Admin Staff. More info Coming Soon!", "warning");
-	    return;
-	  }
-	
-	  const menuButtons = document.getElementById("menuButtons");
-	
-	  // Animate menu buttons in or out
-	  if (viewId !== "menuButtons") {
-	    menuButtons.classList.remove("slide-in");
-	    menuButtons.classList.add("slide-out");
-	    setTimeout(() => {
-	      if (menuButtons.classList.contains("slide-out")) {
-	        menuButtons.style.display = "none";
-	      }
-	    }, 400);
-	  } else {
-	    menuButtons.classList.remove("slide-out");
-	    menuButtons.classList.add("slide-in");
-	    menuButtons.style.display = "flex";
-	  }
-	
-	  // Step 1: Animate out the current active view
-	  let transitionDelay = 0;
-	  if (window.activeView && window.activeView.id !== viewId) {
-	    window.activeView.classList.add("swipe-down-exit");
-	    transitionDelay = 300;
-	
-	    setTimeout(() => {
-	      window.activeView.classList.remove("swipe-down-exit");
-	      window.activeView.classList.remove("active");
-	    }, transitionDelay);
-	  }
-	
-	  // Step 2: Clear all subviews immediately
-	  [
-	    "calendarLoading",
-	    "calendarContainer",
-	    "timeSlotsContainer",
-	    "appointmentFormContainer",
-	    "agentsLoading",
-	    "agentsTableContainer",
-	    "redistributeLoading",
-	    "redistributeResult",
-	    "confirmationContainer",
-	    "helpMeFindForm"
-	  ].forEach(id => {
-	    const el = document.getElementById(id);
-	    if (el) {
-	      el.classList.add("hidden");
-	      if (["agentsTableContainer", "calendarContainer", "timeSlotsContainer", "appointmentFormContainer", "redistributeResult", "confirmationContainer"].includes(id)) {
-	        el.innerHTML = "";
-	      }
-	    }
-	  });
-	
-	  // Step 3: After previous view animates out, animate new view in
-	  setTimeout(() => {
-	    const newView = document.getElementById(viewId);
-	    if (newView) {
-	      newView.classList.add("swipe-up-enter");
-	
-	      setTimeout(() => {
-	        newView.classList.remove("swipe-up-enter");
-	        newView.classList.add("active");
-	        window.activeView = newView;
-	      }, 400); // match entrance animation
-	    }
-	  }, transitionDelay); // only enter after old one exits
-	
-	  // Update currentUser banner visibility
-	  document.getElementById("currentUser").style.display =
-	    viewId === "menuButtons" ? "block" : "none";
-	}
+		function showView(viewId) {
+		  if (!window.isAuthorized && viewId !== "menuButtons") {
+		    showBanner("Sorry! This Tool is currently only for Admin Staff. More info Coming Soon!", "warning");
+		    return;
+		  }
+		
+		  const isMenu = viewId === "menuButtons";
+		  const menuButtons = document.getElementById("menuButtons");
+		  let transitionDelay = 0;
+		
+		  // Animate out current view if switching
+		  if (window.activeView && window.activeView.id !== viewId) {
+		    const exitDirection = window.activeView.id === "menuButtons" ? "swipe-up-exit" : "swipe-down-exit";
+		    window.activeView.classList.add(exitDirection);
+		    transitionDelay = 300;
+		
+		    setTimeout(() => {
+		      window.activeView.classList.remove(exitDirection);
+		      window.activeView.classList.remove("active");
+		      window.activeView.style.display = "none";
+		    }, transitionDelay);
+		  }
+		
+		  // Clear subviews
+		  [
+		    "calendarLoading",
+		    "calendarContainer",
+		    "timeSlotsContainer",
+		    "appointmentFormContainer",
+		    "agentsLoading",
+		    "agentsTableContainer",
+		    "redistributeLoading",
+		    "redistributeResult",
+		    "confirmationContainer",
+		    "helpMeFindForm"
+		  ].forEach(id => {
+		    const el = document.getElementById(id);
+		    if (el) {
+		      el.classList.add("hidden");
+		      if (["agentsTableContainer", "calendarContainer", "timeSlotsContainer", "appointmentFormContainer", "redistributeResult", "confirmationContainer"].includes(id)) {
+		        el.innerHTML = "";
+		      }
+		    }
+		  });
+		
+		  // Animate in new view
+		  setTimeout(() => {
+		    const newView = document.getElementById(viewId);
+		    if (newView) {
+		      const enterDirection = viewId === "menuButtons" ? "swipe-down-enter" : "swipe-up-enter";
+		      newView.style.display = "flex"; // Ensure visible before animating
+		      newView.classList.add(enterDirection);
+		
+		      setTimeout(() => {
+		        newView.classList.remove(enterDirection);
+		        newView.classList.add("active");
+		        window.activeView = newView;
+		      }, 400);
+		    }
+		  }, transitionDelay);
+		
+		  // Show/hide user banner
+		  document.getElementById("currentUser").style.display = isMenu ? "block" : "none";
+		}
+
 
 
 
