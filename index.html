@@ -729,12 +729,18 @@
 	function searchAgents() {
 	  const zip = document.getElementById("zipInput").value.trim();
 	  if (!/^\d{5}$/.test(zip)) {
-		showBanner("Please enter a valid zip code.", "warning");
-		return;
+	    showBanner("Please enter a valid zip code.", "warning");
+	    return;
 	  }
+	
 	  window.lastZipSearch = zip;
+	
+	  // ✅ Ensure the agents view is visible
+	  showView("agentsView");
+	
 	  findGroupByZip(zip);
 	}
+
 
 
     async function useMostRecentInquiry() {
@@ -2045,6 +2051,8 @@ function showRedistributeResult(agent, entry, zip) {
               showBanner("There was a problem submitting your support request.", "error");
             });
         }
+
+	
 
 
 
