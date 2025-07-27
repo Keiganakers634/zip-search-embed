@@ -935,9 +935,10 @@
 
       for (const agent of activeAgents) {
         const isNext = agent.id === nextId;
+	const imageUrl = agent.picture?.["60x60"] || "https://via.placeholder.com/60?text=No+Photo";
         html += `
           <tr class="${isNext ? 'highlight' : ''}">
-            <td><img src="${agent.picture["60x60"]}" alt="${agent.name}" /></td>
+            <td><img src="${imageUrl}" alt="${agent.name}" /></td>
             <td>${agent.name}</td>
             <td>
 		<button class="button" style="padding:5px 10px; font-size:12px;"
