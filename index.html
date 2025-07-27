@@ -575,33 +575,34 @@
 	
 	  const menuButtons = document.getElementById("menuButtons");
 	
-	  // Animate the menu out if we're leaving the main menu
+	  // Animate menu buttons in or out
 	  if (viewId !== "menuButtons") {
 	    menuButtons.classList.remove("slide-in");
 	    menuButtons.classList.add("slide-out");
-	
 	    setTimeout(() => {
 	      if (menuButtons.classList.contains("slide-out")) {
 	        menuButtons.style.display = "none";
 	      }
-	    }, 400); // match animation
+	    }, 400);
 	  } else {
 	    menuButtons.classList.remove("slide-out");
 	    menuButtons.classList.add("slide-in");
-	    menuButtons.style.display = "flex"; // Restore layout if hidden
+	    menuButtons.style.display = "flex";
 	  }
 	
-	  // Animate out current view (if any) before hiding
+	  // Step 1: Animate out the current active view
+	  let transitionDelay = 0;
 	  if (window.activeView && window.activeView.id !== viewId) {
 	    window.activeView.classList.add("swipe-down-exit");
+	    transitionDelay = 300;
 	
 	    setTimeout(() => {
 	      window.activeView.classList.remove("swipe-down-exit");
 	      window.activeView.classList.remove("active");
-	    }, 300); // match exit animation duration
+	    }, transitionDelay);
 	  }
 	
-	  // ✅ Clear all inner sub-views for consistent behavior
+	  // Step 2: Clear all subviews immediately
 	  [
 	    "calendarLoading",
 	    "calendarContainer",
@@ -617,30 +618,31 @@
 	    const el = document.getElementById(id);
 	    if (el) {
 	      el.classList.add("hidden");
-	
-	      // Clear dynamic content for views that populate with innerHTML
 	      if (["agentsTableContainer", "calendarContainer", "timeSlotsContainer", "appointmentFormContainer", "redistributeResult", "confirmationContainer"].includes(id)) {
 	        el.innerHTML = "";
 	      }
 	    }
 	  });
 	
-	  // Activate the requested view
-	  const newView = document.getElementById(viewId);
-	  if (newView) {
-	    newView.classList.add("swipe-up-enter");
+	  // Step 3: After previous view animates out, animate new view in
+	  setTimeout(() => {
+	    const newView = document.getElementById(viewId);
+	    if (newView) {
+	      newView.classList.add("swipe-up-enter");
 	
-	    setTimeout(() => {
-	      newView.classList.remove("swipe-up-enter");
-	      newView.classList.add("active");
-	      window.activeView = newView;
-	    }, 400); // match entrance animation
-	  }
+	      setTimeout(() => {
+	        newView.classList.remove("swipe-up-enter");
+	        newView.classList.add("active");
+	        window.activeView = newView;
+	      }, 400); // match entrance animation
+	    }
+	  }, transitionDelay); // only enter after old one exits
 	
-	  // Show/hide current user banner depending on view
+	  // Update currentUser banner visibility
 	  document.getElementById("currentUser").style.display =
 	    viewId === "menuButtons" ? "block" : "none";
 	}
+
 
 
 
