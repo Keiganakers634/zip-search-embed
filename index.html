@@ -12,16 +12,17 @@
       overflow-x: hidden;
     }
 
-    .view {
-      display: none;
-      width: 100%;
-      padding: 10px;
-      box-sizing: border-box;
-    }
-
-    .view.active {
-      display: block;
-    }
+		.view {
+		  display: none;
+		  width: 100%;
+		  padding: 10px;
+		  box-sizing: border-box;
+		  position: relative;
+		}
+		
+		.view.active {
+		  display: block;
+		}
 
     #menuButtons {
       display: flex;
@@ -62,31 +63,32 @@
       background-color: #1e4bb8;
     }
 
-    @keyframes slideUpFadeIn {
-      from {
-        transform: translateY(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-		/* Enters from bottom when returning to menuButtons */
-		.swipe-down-enter {
-		  animation: slideDownFadeIn 0.4s ease forwards;
+		/* Entrance from bottom */
+		.swipe-up-enter {
+		  animation: slideUpFadeIn 0.4s ease forwards;
 		  pointer-events: none;
 		}
 		
-		/* Exits up when leaving menuButtons */
+		/* Exit to top */
 		.swipe-up-exit {
 		  animation: slideUpFadeOut 0.3s ease forwards;
 		  pointer-events: none;
 		}
 		
-		/* Animations */
-		@keyframes slideDownFadeIn {
+		/* Entrance from top */
+		.swipe-down-enter {
+		  animation: slideDownFadeIn 0.4s ease forwards;
+		  pointer-events: none;
+		}
+		
+		/* Exit to bottom */
+		.swipe-down-exit {
+		  animation: slideDownFadeOut 0.3s ease forwards;
+		  pointer-events: none;
+		}
+		
+		/* Keyframes */
+		@keyframes slideUpFadeIn {
 		  from {
 		    transform: translateY(100%);
 		    opacity: 0;
@@ -108,17 +110,47 @@
 		  }
 		}
 		
-		/* Optional: keep all animated views layered right */
+		@keyframes slideDownFadeIn {
+		  from {
+		    transform: translateY(-100%);
+		    opacity: 0;
+		  }
+		  to {
+		    transform: translateY(0);
+		    opacity: 1;
+		  }
+		}
+		
+		@keyframes slideDownFadeOut {
+		  from {
+		    transform: translateY(0);
+		    opacity: 1;
+		  }
+		  to {
+		    transform: translateY(100%);
+		    opacity: 0;
+		  }
+		}
+		
+		/* Animation entrance/exit classes */
 		.swipe-up-enter,
 		.swipe-up-exit,
 		.swipe-down-enter,
 		.swipe-down-exit {
+		  animation-fill-mode: both;
+		  pointer-events: none;
+		  z-index: 2;
+		}
+		
+		.view-animating {
 		  position: absolute;
 		  width: 100%;
 		  left: 0;
 		  top: 0;
-		  z-index: 10;
+		  z-index: 2;
 		}
+
+
 	  
     .back-button {
       display: inline-block;
@@ -577,12 +609,11 @@
 		  // Animate out current view if switching
 		  if (window.activeView && window.activeView.id !== viewId) {
 		    const exitDirection = window.activeView.id === "menuButtons" ? "swipe-up-exit" : "swipe-down-exit";
-		    window.activeView.classList.add(exitDirection);
+		    window.activeView.classList.add(exitDirection, "view-animating");
 		    transitionDelay = 300;
 		
 		    setTimeout(() => {
-		      window.activeView.classList.remove(exitDirection);
-		      window.activeView.classList.remove("active");
+		      window.activeView.classList.remove(exitDirection, "view-animating", "active");
 		      window.activeView.style.display = "none";
 		    }, transitionDelay);
 		  }
@@ -613,12 +644,12 @@
 		  setTimeout(() => {
 		    const newView = document.getElementById(viewId);
 		    if (newView) {
-		      const enterDirection = viewId === "menuButtons" ? "swipe-down-enter" : "swipe-up-enter";
+		      const enterDirection = isMenu ? "swipe-down-enter" : "swipe-up-enter";
 		      newView.style.display = "flex"; // Ensure visible before animating
-		      newView.classList.add(enterDirection);
+		      newView.classList.add(enterDirection, "view-animating");
 		
 		      setTimeout(() => {
-		        newView.classList.remove(enterDirection);
+		        newView.classList.remove(enterDirection, "view-animating");
 		        newView.classList.add("active");
 		        window.activeView = newView;
 		      }, 400);
@@ -628,10 +659,6 @@
 		  // Show/hide user banner
 		  document.getElementById("currentUser").style.display = isMenu ? "block" : "none";
 		}
-
-
-
-
 
 
 
