@@ -934,7 +934,21 @@
 
       for (const agent of activeAgents) {
         const isNext = agent.id === nextId;
-	const imageUrl = agent.picture?.["60x60"] || "https://via.placeholder.com/60?text=No+Photo";
+        const photoHTML = agent.picture?.["60x60"]
+          ? `<img src="${agent.picture["60x60"]}" alt="${agent.name}" style="border-radius: 50%;" />`
+          : `<div style="
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                background-color: #2563EB;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 16px;
+                font-family: sans-serif;
+              ">RS</div>`;
         html += `
           <tr class="${isNext ? 'highlight' : ''}">
             <td><img src="${imageUrl}" alt="${agent.name}" /></td>
