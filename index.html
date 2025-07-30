@@ -1318,12 +1318,12 @@
           console.log("Most recent inquiry zip:", zip);
           findGroupAndRedistribute(zip);
         } else {
-          alert("No recent inquiries with property zip found.");
+        showBanner("No Recent Property inquiry found! Try typing a zip in the Find an agent tool!", "error");
           goBack();
         }
       } catch (e) {
         console.error(e);
-        alert("Error retrieving recent inquiries.");
+        showBanner("No Recent Property inquiry found! Try typing a zip in the Find an agent tool!", "error");
         goBack();
       }
     }
