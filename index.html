@@ -1108,7 +1108,6 @@
 	    console.error(err);
 	  }
 	}
-	  
 	function renderGroupAvailabilityCalendar() {
 	  // Hide all other subviews before showing the calendar
 	  [
@@ -1122,35 +1121,18 @@
 	    const el = document.getElementById(id);
 	    if (el) el.classList.add("hidden");
 	  });
-	
 	  showView("redistributeView");
-	
+
 	  const container = document.getElementById("calendarContainer");
 	  container.classList.remove("hidden");
-	
-	  // ✅ Prevent duplicate back buttons
-	  container.innerHTML = "";
-	
-	  // ✅ Back button HTML
-	  const backBtn = document.createElement("button");
-	  backBtn.className = "back-button button";
-	  backBtn.textContent = "← Back";
-	  backBtn.style.cssText = "margin-bottom: 10px; padding: 6px 12px; font-size: 12px;";
-	  backBtn.onclick = goBack;
-	  container.appendChild(backBtn);
-	
-	  // Calendar heading
-	  const heading = document.createElement("h3");
-	  heading.textContent = "Select a Date:";
-	  container.appendChild(heading);
-	
-	  // Calendar grid
+	  container.innerHTML = "<h3>Select a Date:</h3>";
+
 	  const grid = document.createElement("div");
 	  grid.className = "calendar-grid";
-	
+
 	  const today = new Date();
 	  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-	
+
 	  for (const d of dayNames) {
 	    const header = document.createElement("div");
 	    header.style.fontWeight = "bold";
@@ -1158,25 +1140,25 @@
 	    header.textContent = d;
 	    grid.appendChild(header);
 	  }
-	
+
 	  const weekday = today.getDay();
 	  for (let i = 0; i < weekday; i++) {
 	    grid.appendChild(document.createElement("div"));
 	  }
-	
+
 	  for (let i = 0; i < 14; i++) {
 	    const date = new Date(today);
 	    date.setDate(today.getDate() + i);
-	
+
 	    const btn = document.createElement("button");
 	    btn.textContent = date.getDate();
 	    btn.className = "button";
 	    btn.style.fontSize = "14px";
 	    btn.onclick = () => renderTimeSlotChooser(date);
-	
+
 	    grid.appendChild(btn);
 	  }
-	
+
 	  container.appendChild(grid);
 	}
 
