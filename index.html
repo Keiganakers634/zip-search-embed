@@ -1482,12 +1482,13 @@
         if (data.assignedUserId === agent.id) {
           showRedistributeResult(agent, entry, zip);
         } else {
-          throw new Error("Response did not confirm assignment.");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Redistribution failed. Try again.");
-        goBack();
+  	  showBanner("No Recent Property inquiry found! Try typing a zip in the Find an agent tool!", "error");
+  	  setTimeout(() => goBack(), 1000); // Allow banner to render before view switches
+	}
+      } catch (e) {
+  	console.error(e);
+  	showBanner("No Recent Property inquiry found! Try typing a zip in the Find an agent tool!", "error");
+  	setTimeout(() => goBack(), 1000); // Allow banner to render before view switches
       }
     }
 
