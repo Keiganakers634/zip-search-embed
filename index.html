@@ -640,17 +640,19 @@
 	    }
 	  });
 	
-	  // Activate the requested view
-	  const newView = document.getElementById(viewId);
-	  if (newView) {
-	    newView.classList.add("swipe-up-enter");
+	// Activate the requested view
+	const newView = document.getElementById(viewId);
+	if (newView) {
+	  newView.classList.remove("active", "swipe-down-exit", "swipe-up-enter");
+	  newView.classList.add("swipe-up-enter");
+	  window.activeView = newView; // ✅ Make this available for next transition
 	
-	    setTimeout(() => {
-	      newView.classList.remove("swipe-up-enter");
-	      newView.classList.add("active");
-	      window.activeView = newView;
-	    }, 400); // match entrance animation
-	  }
+	  setTimeout(() => {
+	    newView.classList.remove("swipe-up-enter");
+	    newView.classList.add("active");
+	  }, 400); // match entrance animation
+	}
+
 	
 	  // Show/hide current user banner depending on view
 	  document.getElementById("currentUser").style.display =
