@@ -731,7 +731,10 @@
 	      redistributeResult.classList.add("hidden");
 	      redistributeResult.innerHTML = "";
 	    }
-	  }
+
+	  // Remove all back buttons on view reset
+	  document.querySelectorAll(".back-button").forEach(btn => btn.remove());
+	}
 
 	function searchAgents() {
 	  const zip = document.getElementById("zipInput").value.trim();
