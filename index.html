@@ -608,29 +608,48 @@
 	    }, 300); // match exit animation duration
 	  }
 	
-	  // ✅ Clear all inner sub-views for consistent behavior
 	  [
 	    "calendarLoading",
 	    "calendarContainer",
-	    "timeSlotsContainer",
+  	    "timeSlotsContainer",
 	    "appointmentFormContainer",
 	    "agentsLoading",
 	    "agentsTableContainer",
 	    "redistributeLoading",
 	    "redistributeResult",
 	    "confirmationContainer",
-	    "helpMeFindForm"
+	    "helpMeFindForm",
+	    "redistributeView",
+	    "zipSearchView",
+	    "agentsView",
+	    "supportView",
+	    "supportThanksView"
 	  ].forEach(id => {
 	    const el = document.getElementById(id);
 	    if (el) {
 	      el.classList.add("hidden");
 	
 	      // Clear dynamic content for views that populate with innerHTML
-	      if (["agentsTableContainer", "calendarContainer", "timeSlotsContainer", "appointmentFormContainer", "redistributeResult", "confirmationContainer"].includes(id)) {
+	      if (
+	        [
+	          "agentsTableContainer",
+	          "calendarContainer",
+	          "timeSlotsContainer",
+	          "appointmentFormContainer",
+	          "redistributeResult",
+	          "confirmationContainer",
+	          "redistributeView",
+	          "zipSearchView",
+	          "agentsView",
+	          "supportView",
+	          "supportThanksView"
+	        ].includes(id)
+	      ) {
 	        el.innerHTML = "";
 	      }
 	    }
 	  });
+
 	
 	  // Activate the requested view
 	  const newView = document.getElementById(viewId);
