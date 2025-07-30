@@ -940,68 +940,62 @@
       }
     }
 
-	function renderAgents(entry, groupData, searchedZip) {
-	  const container = document.getElementById("agentsTableContainer");
-	  container.innerHTML = "";
-	
-	  const nextId = groupData.nextRoundRobinUser;
-	  const activeAgents = groupData.users.filter(u => !u.pauseLeadDistribution);
-	
-	  let html = `
-	    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-	      <button class="back-button button" style="padding: 6px 12px; font-size: 12px;" onclick="goBack()">← Back</button>
-	    </div>
-	
-	    <h3>Team: ${entry.team}</h3>
-	    <h4>Group: ${entry.group}</h4>
-	    <h4>Zip Used: ${searchedZip}</h4>
-	
-	    <table>
-	      <tr>
-	        <th>Photo</th>
-	        <th>Name</th>
-	        <th>Action</th>
-	      </tr>
-	  `;
-	
-	  for (const agent of activeAgents) {
-	    const isNext = agent.id === nextId;
-	    const photoHTML = agent.picture?.["60x60"]
-	      ? `<img src="${agent.picture["60x60"]}" alt="${agent.name}" style="border-radius: 50%;" />`
-	      : `<div style="
-	            width: 60px;
-	            height: 60px;
-	            border-radius: 50%;
-	            background-color: #2563EB;
-	            color: white;
-	            display: flex;
-	            align-items: center;
-	            justify-content: center;
-	            font-weight: bold;
-	            font-size: 16px;
-	            font-family: sans-serif;
-	          ">RS</div>`;
-	    html += `
-	      <tr class="${isNext ? 'highlight' : ''}">
-	        <td>${photoHTML}</td>
-	        <td>${agent.name}</td>
-	        <td>
-	          <button class="button" style="padding:5px 10px; font-size:12px;"
-	            onclick='executeRedistribution(${JSON.stringify(agent)}, ${JSON.stringify(entry)}, "${searchedZip}")'>
-	            ${isNext ? "Next in Line!" : "Reassign"}
-	          </button>
-	        </td>
-	      </tr>
-	    `;
-	  }
-	
-	  html += "</table>";
-	
-	  container.innerHTML = html;
-	  document.getElementById("agentsLoading").classList.add("hidden");
-	  container.classList.remove("hidden");
-	}
+    function renderAgents(entry, groupData, searchedZip) {
+      const container = document.getElementById("agentsTableContainer");
+      container.innerHTML = "";
 
+      const nextId = groupData.nextRoundRobinUser;
+      const activeAgents = groupData.users.filter(u => !u.pauseLeadDistribution);
+
+      let html = `
+        <h3>Team: ${entry.team}</h3>
+        <h4>Group: ${entry.group}</h4>
+		<h4>Zip Used: ${searchedZip}</h4>
+        <table>
+          <tr>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Action</th>
+          </tr>
+      `;
+
+      for (const agent of activeAgents) {
+        const isNext = agent.id === nextId;
+        const photoHTML = agent.picture?.["60x60"]
+          ? `<img src="${agent.picture["60x60"]}" alt="${agent.name}" style="border-radius: 50%;" />`
+          : `<div style="
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                background-color: #2563EB;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 16px;
+                font-family: sans-serif;
+              ">RS</div>`;
+        html += `
+          <tr class="${isNext ? 'highlight' : ''}">
+            <td>${photoHTML}</td>
+            <td>${agent.name}</td>
+            <td>
+		<button class="button" style="padding:5px 10px; font-size:12px;"
+		  onclick='executeRedistribution(${JSON.stringify(agent)}, ${JSON.stringify(entry)}, "${searchedZip}")'>
+		  ${isNext ? "Next in Line!" : "Reassign"}
+		</button>
+            </td>
+          </tr>
+        `;
+      }
+
+      html += "</table>";
+
+      container.innerHTML = html;
+      document.getElementById("agentsLoading").classList.add("hidden");
+      container.classList.remove("hidden");
+    }
 
 	function showHelpMeFindForm() {
 	  document.getElementById("apptSetterOptions").classList.add("hidden");
