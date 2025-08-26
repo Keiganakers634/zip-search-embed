@@ -1196,64 +1196,69 @@
 	}
 
 	function displayAvailableAgentsForSlot(agentList, slotStart) {
-	  document.getElementById("timeSlotsContainer").classList.add("hidden");
-	
-	  const container = document.getElementById("appointmentFormContainer");
-	  container.classList.remove("hidden");
-	  container.innerHTML = ""; // Clear previous contents
-	
-	  const readableTime = slotStart.toLocaleString([], {
-	    weekday: 'short',
-	    hour: 'numeric',
-	    minute: '2-digit'
-	  });
-	
-	  const backBtn = document.createElement("span");
-	  backBtn.className = "back-button";
-	  backBtn.textContent = "← Back";
-	  backBtn.onclick = goBackToCalendar;
-	  container.appendChild(backBtn);
-	
-	  const heading = document.createElement("h4");
-	  heading.textContent = `Available Agents for ${readableTime}`;
-	  container.appendChild(heading);
-	
-	  const table = document.createElement("table");
-	  const headerRow = document.createElement("tr");
-	  headerRow.innerHTML = "<th>Photo</th><th>Name</th><th>Action</th>";
-	  table.appendChild(headerRow);
-	
-	  agentList.forEach(({ agent }) => {
-	    const row = document.createElement("tr");
-	
-	    const photo = document.createElement("td");
-	    const img = document.createElement("img");
-	    img.src = agent.picture?.["60x60"] || "";
-	    img.alt = agent.name;
-	    photo.appendChild(img);
-	
-	    const name = document.createElement("td");
-	    name.textContent = agent.name;
-	
-	    const action = document.createElement("td");
-	    const btn = document.createElement("button");
-	    btn.className = "button";
-	    btn.style.padding = "5px 10px";
-	    btn.style.fontSize = "12px";
-	    btn.textContent = "Assign and Schedule";
-	    btn.onclick = () => assignAgentToSlot(agent.id, agent.name, slotStart);
-	    action.appendChild(btn);
-	
-	    row.appendChild(photo);
-	    row.appendChild(name);
-	    row.appendChild(action);
-	    table.appendChild(row);
-	  });
-	
-	  container.appendChild(table);
-	}
+  document.getElementById("timeSlotsContainer").classList.add("hidden");
 
+  const container = document.getElementById("appointmentFormContainer");
+  container.classList.remove("hidden");
+  container.innerHTML = "";
 
+  const readableTime = slotStart.toLocaleString([], {
+    weekday: 'short',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+
+  const backBtn = document.createElement("span");
+  backBtn.className = "back-button";
+  backBtn.textContent = "← Back";
+  backBtn.onclick = goBackToCalendar;
+  container.appendChild(backBtn);
+
+  const heading = document.createElement("h4");
+  heading.textContent = `Available Agents for ${readableTime}`;
+  container.appendChild(heading);
+
+  const table = document.createElement("table");
+  const headerRow = document.createElement("tr");
+  headerRow.innerHTML = "<th>Photo</th><th>Name</th><th>Phone</th><th>Action</th>";
+  table.appendChild(headerRow);
+
+  agentList.forEach(({ agent }) => {
+    const row = document.createElement("tr");
+
+    const phoneNumber = agent.phone || "N/A";
+
+    const photo = document.createElement("td");
+    const img = document.createElement("img");
+    img.src = agent.picture?.["60x60"] || "";
+    img.alt = agent.name;
+    photo.appendChild(img);
+
+    const name = document.createElement("td");
+    name.textContent = agent.name;
+
+    const phone = document.createElement("td");
+    phone.textContent = phoneNumber;
+
+    const action = document.createElement("td");
+    const btn = document.createElement("button");
+    btn.className = "button";
+    btn.style.padding = "5px 10px";
+    btn.style.fontSize = "12px";
+    btn.textContent = "Assign and Schedule";
+    btn.onclick = () => assignAgentToSlot(agent.id, agent.name, slotStart);
+    action.appendChild(btn);
+
+    row.appendChild(photo);
+    row.appendChild(name);
+    row.appendChild(phone);
+    row.appendChild(action);
+
+    table.appendChild(row);
+  });
+
+  container.appendChild(table);
+}
 
 	async function assignAgentToSlot(agentId, agentName, slotStartIso) {
 	  // 1. Update the assigned agent globally for use in appointment form
@@ -1939,76 +1944,81 @@ function showRedistributeResult(agent, entry, zip) {
 	}
 
 	async function showAvailableAgentResult(userId, userName) {
-		const zip = window.lastZipSearch;
-		const entry = zipGroupsData.find(item => item.zip === zip);
+  const zip = window.lastZipSearch;
+  const entry = zipGroupsData.find(item => item.zip === zip);
 
-		if (!entry) {
-			alert("Could not find zip group data for confirmation view.");
-			goBack();
-			return;
-		}
+  if (!entry) {
+    alert("Could not find zip group data for confirmation view.");
+    goBack();
+    return;
+  }
 
-		const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
-		const url = `https://api.followupboss.com/v1/users/${userId}`;
-  
-		try {
-			const res = await fetch(url, {
-				headers: { "accept": "application/json", "authorization": `Basic ${apiKey}` }
-			});
+  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+  const url = `https://api.followupboss.com/v1/users/${userId}`;
 
-			if (!res.ok) throw new Error("Failed to load agent info");
-			const userData = await res.json();
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "accept": "application/json",
+        "authorization": `Basic ${apiKey}`
+      }
+    });
 
-			window.assignedAgentId = userId;
-			window.assignedAgentName = userName;
-			const phoneNumber = userData.phones?.[0]?.number || "No phone available";
-			window.assignedAgentPhone = phoneNumber;
+    if (!res.ok) throw new Error("Failed to load agent info");
 
-			document.getElementById("calendarLoading").classList.add("hidden");
-			document.getElementById("calendarContainer").classList.add("hidden");
-			document.getElementById("timeSlotsContainer").classList.add("hidden");
-			document.getElementById("appointmentFormContainer").classList.add("hidden");
+    const userData = await res.json();
+    const phoneNumber = userData.phone || "N/A";
 
-			const container = document.getElementById("redistributeResult");
-			container.innerHTML = `
-				<p><strong>Reassignment Complete!</strong></p>
-				<p>Zip: ${zip}</p>
-				<p>Team: ${entry.team}</p>
-				<p>Group: ${entry.group}</p>
-				<table>
-					<tr>
-						<th>Photo</th>
-						<th>Name</th>
-						<th>Phone</th>
-						<th>Action</th>
-					</tr>
-					<tr>
-						<td><img src="${userData.picture?.["60x60"] || ''}" alt="${userName}" style="border-radius:50%;" /></td>
-						<td>${userName}</td>
-						<td>${phoneNumber}</td>
-						<td>
-							<button type="button" class="button" style="padding:5px 10px; font-size:12px;"
-								onclick="scheduleAppointment()">
-								Schedule an Appointment
-							</button>
-						</td>
-					</tr>
-				</table>
-			`;
+    window.assignedAgentId = userId;
+    window.assignedAgentName = userName;
 
-			document.getElementById("agentsTableContainer")?.classList.add("hidden");
-			document.getElementById("agentsLoading")?.classList.add("hidden");
-			document.getElementById("agentsForm")?.classList.add("hidden");
+    document.getElementById("calendarLoading").classList.add("hidden");
+    document.getElementById("calendarContainer").classList.add("hidden");
+    document.getElementById("timeSlotsContainer").classList.add("hidden");
+    document.getElementById("appointmentFormContainer").classList.add("hidden");
 
-			showView("redistributeView");
-			container.classList.remove("hidden");
+    const container = document.getElementById("redistributeResult");
 
-		} catch (err) {
-			console.error(err);
-			alert("Could not load agent details for confirmation view.");
-			goBack();
-		}
-	}
+    container.innerHTML = `
+      <p><strong>Reassignment Complete!</strong></p>
+      <p>Zip: ${zip}</p>
+      <p>Team: ${entry.team}</p>
+      <p>Group: ${entry.group}</p>
+      <table>
+        <tr>
+          <th>Photo</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Action</th>
+        </tr>
+        <tr>
+          <td><img src="${userData.picture?.["60x60"] || ''}" alt="${userName}" /></td>
+          <td>${userName}</td>
+          <td>${phoneNumber}</td>
+          <td>
+            <button type="button" class="button" style="padding:5px 10px; font-size:12px;"
+              onclick="scheduleAppointment()">
+              Schedule an Appointment
+            </button>
+          </td>
+        </tr>
+      </table>
+    `;
+
+    document.getElementById("agentsTableContainer").classList.add("hidden");
+    document.getElementById("agentsLoading").classList.add("hidden");
+    document.getElementById("agentsForm").classList.add("hidden");
+
+    showView("redistributeView");
+    container.classList.remove("hidden");
+
+  } catch (err) {
+    console.error(err);
+    alert("Could not load agent details for confirmation view.");
+    goBack();
+  }
+}
+
 
 
 
