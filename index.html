@@ -1556,54 +1556,48 @@ function showRedistributeResult(agent, entry, zip) {
 
 
 	async function initApptSetterForAssignedAgent() {
-	  if (!window.contextPersonId) {
-	    alert("Missing personId in context.");
-	    return;
-	  }
-	
-	  // Hide appointment options to prevent stacking
-	  document.getElementById("apptSetterOptions").classList.add("hidden");
-	
-	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
-	  const url = `https://api.followupboss.com/v1/people/${window.contextPersonId}`;
-	
-	  try {
-	    const res = await fetch(url, {
-	      headers: {
-	        "accept": "application/json",
-	        "authorization": `Basic ${apiKey}`
-	      }
-	    });
-	
-	    if (!res.ok) throw new Error("Failed to load person details");
-	    const data = await res.json();
-	
-	    const userId = data.assignedUserId;
-	    if (!userId) {
-	      alert("No assigned user found for this lead.");
-	      return;
-	    }
-	
-	    // Store assigned agent details globally
-	    window.assignedAgentId = userId;
-	    window.assignedAgentName = data.assignedTo?.name || "Assigned Agent";
-	
-	    // ✅ Fix null name in calendar titles
-	    window.contextPersonName = data.name || "Unknown Lead";
-	
-	    // Swap to calendar view
-	    showView("redistributeView");
-	    document.getElementById("calendarLoading").classList.remove("hidden");
-	
-	    // Load appointments slightly delayed to allow UI rendering
-	    setTimeout(loadAgentAppointments, 50);
-	
-	  } catch (e) {
-	    console.error(e);
-	    alert("Failed to load assigned agent. Try using 'Help me find one!' instead.");
-	  }
-	}
+		if (!window.contextPersonId) {
+			alert("Missing personId in context.");
+			return;
+		}
 
+		document.getElementById("apptSetterOptions").classList.add("hidden");
+
+		const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+		const url = `https://api.followupboss.com/v1/people/${window.contextPersonId}`;
+
+		try {
+			const res = await fetch(url, { headers: { "accept": "application/json", "authorization": `Basic ${apiKey}` } });
+			if (!res.ok) throw new Error("Failed to load person details");
+			const data = await res.json();
+
+			const userId = data.assignedUserId;
+			if (!userId) {
+				alert("No assigned user found for this lead.");
+				return;
+			}
+
+			// Fetch the assigned agent's user data
+			const userUrl = `https://api.followupboss.com/v1/users/${userId}`;
+			const userRes = await fetch(userUrl, { headers: { "accept":"application/json", "authorization": `Basic ${apiKey}` } });
+			const userData = userRes.ok ? await userRes.json() : {};
+			const phoneNumber = userData.phones?.[0]?.number || "No phone available";
+
+			window.assignedAgentId = userId;
+			window.assignedAgentName = userData.name || "Assigned Agent";
+			window.assignedAgentPhone = phoneNumber;
+			window.contextPersonName = data.name || "Unknown Lead";
+
+			showView("redistributeView");
+			document.getElementById("calendarLoading").classList.remove("hidden");
+
+			setTimeout(loadAgentAppointments, 50);
+
+		} catch (e) {
+			console.error(e);
+			alert("Failed to load assigned agent. Try using 'Help me find one!' instead.");
+		}
+	}
 
 	function scheduleAppointment() {
 		document.getElementById("redistributeResult").classList.add("hidden");
@@ -1945,79 +1939,77 @@ function showRedistributeResult(agent, entry, zip) {
 	}
 
 	async function showAvailableAgentResult(userId, userName) {
-	  // Find the last searched entry so we know team, group etc.
-	  const zip = window.lastZipSearch;
-	  const entry = zipGroupsData.find(item => item.zip === zip);
+		const zip = window.lastZipSearch;
+		const entry = zipGroupsData.find(item => item.zip === zip);
 
-	  if (!entry) {
-		alert("Could not find zip group data for confirmation view.");
-		goBack();
-		return;
-	  }
+		if (!entry) {
+			alert("Could not find zip group data for confirmation view.");
+			goBack();
+			return;
+		}
 
-	  // Load agent photo from API so we can show it
-	  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
-	  const url = `https://api.followupboss.com/v1/users/${userId}`;
-	  try {
-		const res = await fetch(url, {
-		  headers: {
-			"accept": "application/json",
-			"authorization": `Basic ${apiKey}`
-		  }
-		});
-		if (!res.ok) throw new Error("Failed to load agent info");
+		const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
+		const url = `https://api.followupboss.com/v1/users/${userId}`;
+  
+		try {
+			const res = await fetch(url, {
+				headers: { "accept": "application/json", "authorization": `Basic ${apiKey}` }
+			});
 
-		const userData = await res.json();
+			if (!res.ok) throw new Error("Failed to load agent info");
+			const userData = await res.json();
 
-		window.assignedAgentId = userId;
-		window.assignedAgentName = userName;
+			window.assignedAgentId = userId;
+			window.assignedAgentName = userName;
+			const phoneNumber = userData.phones?.[0]?.number || "No phone available";
+			window.assignedAgentPhone = phoneNumber;
 
-		// ✅ Hide all sub-views of the redistribute view so nothing remains visible underneath
-		document.getElementById("calendarLoading").classList.add("hidden");
-		document.getElementById("calendarContainer").classList.add("hidden");
-		document.getElementById("timeSlotsContainer").classList.add("hidden");
-		document.getElementById("appointmentFormContainer").classList.add("hidden");
+			document.getElementById("calendarLoading").classList.add("hidden");
+			document.getElementById("calendarContainer").classList.add("hidden");
+			document.getElementById("timeSlotsContainer").classList.add("hidden");
+			document.getElementById("appointmentFormContainer").classList.add("hidden");
 
-		const container = document.getElementById("redistributeResult");
+			const container = document.getElementById("redistributeResult");
+			container.innerHTML = `
+				<p><strong>Reassignment Complete!</strong></p>
+				<p>Zip: ${zip}</p>
+				<p>Team: ${entry.team}</p>
+				<p>Group: ${entry.group}</p>
+				<table>
+					<tr>
+						<th>Photo</th>
+						<th>Name</th>
+						<th>Phone</th>
+						<th>Action</th>
+					</tr>
+					<tr>
+						<td><img src="${userData.picture?.["60x60"] || ''}" alt="${userName}" style="border-radius:50%;" /></td>
+						<td>${userName}</td>
+						<td>${phoneNumber}</td>
+						<td>
+							<button type="button" class="button" style="padding:5px 10px; font-size:12px;"
+								onclick="scheduleAppointment()">
+								Schedule an Appointment
+							</button>
+						</td>
+					</tr>
+				</table>
+			`;
 
-		container.innerHTML = `
-		  <p><strong>Reassignment Complete!</strong></p>
-		  <p>Zip: ${zip}</p>
-		  <p>Team: ${entry.team}</p>
-		  <p>Group: ${entry.group}</p>
-		  <table>
-			<tr>
-			  <th>Photo</th>
-			  <th>Name</th>
-			  <th>Action</th>
-			</tr>
-			<tr>
-			  <td><img src="${userData.picture["60x60"]}" alt="${userName}" /></td>
-			  <td>${userName}</td>
-			  <td>
-				<button type="button" class="button" style="padding:5px 10px; font-size:12px;"
-				  onclick="scheduleAppointment()">
-				  Schedule an Appointment
-				</button>
-			  </td>
-			</tr>
-		  </table>
-		`;
+			document.getElementById("agentsTableContainer")?.classList.add("hidden");
+			document.getElementById("agentsLoading")?.classList.add("hidden");
+			document.getElementById("agentsForm")?.classList.add("hidden");
 
-		document.getElementById("agentsTableContainer").classList.add("hidden");
-		document.getElementById("agentsLoading").classList.add("hidden");
-		document.getElementById("agentsForm").classList.add("hidden");
+			showView("redistributeView");
+			container.classList.remove("hidden");
 
-		// Switch views cleanly
-		showView("redistributeView");
-		document.getElementById("redistributeResult").classList.remove("hidden");
-
-	  } catch (err) {
-		console.error(err);
-		alert("Could not load agent details for confirmation view.");
-		goBack();
-	  }
+		} catch (err) {
+			console.error(err);
+			alert("Could not load agent details for confirmation view.");
+			goBack();
+		}
 	}
+
 
 
 	function parseBusyWindows(appointments, agentId) {
