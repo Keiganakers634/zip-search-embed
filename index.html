@@ -1195,69 +1195,53 @@
 	  container.appendChild(grid);
 	}
 
-	function displayAvailableAgentsForSlot(agentList, slotStart) {
-  document.getElementById("timeSlotsContainer").classList.add("hidden");
+async function displayAvailableAgentsForSlot(agents, slot) {
+  const container = document.getElementById("agentsTableContainer");
+  container.innerHTML = `
+    <h3>Available Agents for ${slot.start.toLocaleString()}</h3>
+    <table>
+      <tr>
+        <th>Photo</th>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Action</th>
+      </tr>
+    </table>
+  `;
 
-  const container = document.getElementById("appointmentFormContainer");
-  container.classList.remove("hidden");
-  container.innerHTML = "";
+  const table = container.querySelector("table");
 
-  const readableTime = slotStart.toLocaleString([], {
-    weekday: 'short',
-    hour: 'numeric',
-    minute: '2-digit'
-  });
+  const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
 
-  const backBtn = document.createElement("span");
-  backBtn.className = "back-button";
-  backBtn.textContent = "← Back";
-  backBtn.onclick = goBackToCalendar;
-  container.appendChild(backBtn);
+  for (const agent of agents) {
+    try {
+      const res = await fetch(`https://api.followupboss.com/v1/users/${agent.id}`, {
+        headers: {
+          "accept": "application/json",
+          "authorization": `Basic ${apiKey}`
+        }
+      });
+      if (!res.ok) throw new Error("Failed to fetch agent details");
 
-  const heading = document.createElement("h4");
-  heading.textContent = `Available Agents for ${readableTime}`;
-  container.appendChild(heading);
+      const userData = await res.json();
+      const phoneNumber = userData.phone || "N/A";
 
-  const table = document.createElement("table");
-  const headerRow = document.createElement("tr");
-  headerRow.innerHTML = "<th>Photo</th><th>Name</th><th>Phone</th><th>Action</th>";
-  table.appendChild(headerRow);
-
-  agentList.forEach(({ agent }) => {
-    const row = document.createElement("tr");
-
-    const phoneNumber = agent.phone || "N/A";
-
-    const photo = document.createElement("td");
-    const img = document.createElement("img");
-    img.src = agent.picture?.["60x60"] || "";
-    img.alt = agent.name;
-    photo.appendChild(img);
-
-    const name = document.createElement("td");
-    name.textContent = agent.name;
-
-    const phone = document.createElement("td");
-    phone.textContent = phoneNumber;
-
-    const action = document.createElement("td");
-    const btn = document.createElement("button");
-    btn.className = "button";
-    btn.style.padding = "5px 10px";
-    btn.style.fontSize = "12px";
-    btn.textContent = "Assign and Schedule";
-    btn.onclick = () => assignAgentToSlot(agent.id, agent.name, slotStart);
-    action.appendChild(btn);
-
-    row.appendChild(photo);
-    row.appendChild(name);
-    row.appendChild(phone);
-    row.appendChild(action);
-
-    table.appendChild(row);
-  });
-
-  container.appendChild(table);
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><img src="${agent.picture["60x60"]}" alt="${agent.name}" /></td>
+        <td>${agent.name}</td>
+        <td>${phoneNumber}</td>
+        <td>
+          <button type="button" onclick="confirmAgentSelection(${agent.id}, '${agent.name}')">
+            Select
+          </button>
+        </td>
+      `;
+      table.appendChild(row);
+    } catch (err) {
+      console.error("Failed to fetch phone for agent:", agent.id, err);
+    }
+  }
 }
 
 	async function assignAgentToSlot(agentId, agentName, slotStartIso) {
@@ -1944,6 +1928,7 @@ function showRedistributeResult(agent, entry, zip) {
 	}
 
 	async function showAvailableAgentResult(userId, userName) {
+  // Find the last searched entry so we know team, group etc.
   const zip = window.lastZipSearch;
   const entry = zipGroupsData.find(item => item.zip === zip);
 
@@ -1955,7 +1940,6 @@ function showRedistributeResult(agent, entry, zip) {
 
   const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
   const url = `https://api.followupboss.com/v1/users/${userId}`;
-
   try {
     const res = await fetch(url, {
       headers: {
@@ -1963,15 +1947,16 @@ function showRedistributeResult(agent, entry, zip) {
         "authorization": `Basic ${apiKey}`
       }
     });
-
     if (!res.ok) throw new Error("Failed to load agent info");
 
     const userData = await res.json();
-    const phoneNumber = userData.phone || "N/A";
 
     window.assignedAgentId = userId;
     window.assignedAgentName = userName;
 
+    const phoneNumber = userData.phone || "N/A";
+
+    // ✅ Hide all sub-views of the redistribute view so nothing remains visible underneath
     document.getElementById("calendarLoading").classList.add("hidden");
     document.getElementById("calendarContainer").classList.add("hidden");
     document.getElementById("timeSlotsContainer").classList.add("hidden");
@@ -1992,7 +1977,7 @@ function showRedistributeResult(agent, entry, zip) {
           <th>Action</th>
         </tr>
         <tr>
-          <td><img src="${userData.picture?.["60x60"] || ''}" alt="${userName}" /></td>
+          <td><img src="${userData.picture["60x60"]}" alt="${userName}" /></td>
           <td>${userName}</td>
           <td>${phoneNumber}</td>
           <td>
@@ -2009,8 +1994,9 @@ function showRedistributeResult(agent, entry, zip) {
     document.getElementById("agentsLoading").classList.add("hidden");
     document.getElementById("agentsForm").classList.add("hidden");
 
+    // Switch views cleanly
     showView("redistributeView");
-    container.classList.remove("hidden");
+    document.getElementById("redistributeResult").classList.remove("hidden");
 
   } catch (err) {
     console.error(err);
@@ -2018,9 +2004,6 @@ function showRedistributeResult(agent, entry, zip) {
     goBack();
   }
 }
-
-
-
 
 	function parseBusyWindows(appointments, agentId) {
 	  const bufferMs = 60 * 60 * 1000; // 1 hour buffer before and after
