@@ -1210,7 +1210,6 @@ async function displayAvailableAgentsForSlot(agents, slot) {
   `;
 
   const table = container.querySelector("table");
-
   const apiKey = "ZmthXzFlaUFMTjRieWxrMFpmNE0zRWFOMnJGR2ZmRW15Sk9QaFg6";
 
   for (const agent of agents) {
@@ -1224,7 +1223,9 @@ async function displayAvailableAgentsForSlot(agents, slot) {
       if (!res.ok) throw new Error("Failed to fetch agent details");
 
       const userData = await res.json();
-      const phoneNumber = userData.phone || "N/A";
+      const phoneNumber = (userData.phones && userData.phones.length > 0)
+        ? userData.phones.map(p => p.value).join(", ")
+        : "N/A";
 
       const row = document.createElement("tr");
       row.innerHTML = `
@@ -1243,6 +1244,7 @@ async function displayAvailableAgentsForSlot(agents, slot) {
     }
   }
 }
+
 
 	async function assignAgentToSlot(agentId, agentName, slotStartIso) {
 	  // 1. Update the assigned agent globally for use in appointment form
@@ -1570,7 +1572,7 @@ function showRedistributeResult(agent, entry, zip) {
 			const userUrl = `https://api.followupboss.com/v1/users/${userId}`;
 			const userRes = await fetch(userUrl, { headers: { "accept":"application/json", "authorization": `Basic ${apiKey}` } });
 			const userData = userRes.ok ? await userRes.json() : {};
-			const phoneNumber = userData.phones?.[0]?.number || "No phone available";
+			const phoneNumber = userData.phoness?.[0]?.number || "No phone available";
 
 			window.assignedAgentId = userId;
 			window.assignedAgentName = userData.name || "Assigned Agent";
@@ -1927,8 +1929,7 @@ function showRedistributeResult(agent, entry, zip) {
 	  document.getElementById("calendarContainer").classList.remove("hidden");
 	}
 
-	async function showAvailableAgentResult(userId, userName) {
-  // Find the last searched entry so we know team, group etc.
+async function showAvailableAgentResult(userId, userName) {
   const zip = window.lastZipSearch;
   const entry = zipGroupsData.find(item => item.zip === zip);
 
@@ -1954,9 +1955,10 @@ function showRedistributeResult(agent, entry, zip) {
     window.assignedAgentId = userId;
     window.assignedAgentName = userName;
 
-    const phoneNumber = userData.phone || "N/A";
+    const phoneNumber = (userData.phones && userData.phones.length > 0)
+      ? userData.phones.map(p => p.value).join(", ")
+      : "N/A";
 
-    // ✅ Hide all sub-views of the redistribute view so nothing remains visible underneath
     document.getElementById("calendarLoading").classList.add("hidden");
     document.getElementById("calendarContainer").classList.add("hidden");
     document.getElementById("timeSlotsContainer").classList.add("hidden");
@@ -1994,7 +1996,6 @@ function showRedistributeResult(agent, entry, zip) {
     document.getElementById("agentsLoading").classList.add("hidden");
     document.getElementById("agentsForm").classList.add("hidden");
 
-    // Switch views cleanly
     showView("redistributeView");
     document.getElementById("redistributeResult").classList.remove("hidden");
 
@@ -2004,6 +2005,7 @@ function showRedistributeResult(agent, entry, zip) {
     goBack();
   }
 }
+
 
 	function parseBusyWindows(appointments, agentId) {
 	  const bufferMs = 60 * 60 * 1000; // 1 hour buffer before and after
