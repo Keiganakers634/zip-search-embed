@@ -90,10 +90,6 @@
       }
     }
 
-    .swipe-up-enter {
-      animation: slideUpFadeIn 0.4s ease forwards;
-    }
-
     @keyframes slideDownFadeOut {
       from {
         transform: translateY(0);
@@ -115,13 +111,14 @@
       pointer-events: none; /* disable interaction during animation */
     }
 
-    .swipe-up-enter,
-    .swipe-down-exit {
-    position: absolute;
-      width: 100%;
-      left: 0;
-      top: 0;
-    }
+	.swipe-up-enter,
+	.swipe-down-exit {
+	  position: absolute;
+	  width: 100%;
+	  left: 0;
+	  top: 0;
+	  z-index: 2; /* ensure animating pane sits above */
+	}
 	  
     .back-button {
       display: inline-block;
@@ -190,9 +187,6 @@
       background-color: #dbeafe;
     }
 
-    .hidden {
-      display: none !important;
-    }
 
     #calendarContainer, #timeSlotsContainer, #calendarLoading {
       display: flex;
@@ -593,8 +587,14 @@
 	    showBanner("Sorry! This Tool is currently only for Admin Staff. More info Coming Soon!", "warning");
 	    return;
 	  }
-	
+
 	  const menuButtons = document.getElementById("menuButtons");
+		
+	  // Ensure the target view is never stuck hidden via .hidden !important
+	  const targetViewEl = document.getElementById(viewId);
+	  if (targetViewEl) targetViewEl.classList.remove("hidden");
+		
+
 	
 	  // Animate the menu out if we're leaving the main menu
 	  if (viewId !== "menuButtons") {
@@ -649,13 +649,19 @@
 	// Activate the requested view
 	const newView = document.getElementById(viewId);
 	if (newView) {
-	  newView.classList.remove("active", "swipe-down-exit", "swipe-up-enter");
+	  // If someone accidentally left a .hidden on a view, clear it now
+	  newView.classList.remove("hidden");
+	
+	  // Make it visible first so the animation actually renders
+	  newView.classList.remove("swipe-down-exit");
+	  newView.classList.add("active");
+	  // Start the enter animation on a visible element
 	  newView.classList.add("swipe-up-enter");
-	  window.activeView = newView; // ✅ Make this available for next transition
+	
+	  window.activeView = newView;
 	
 	  setTimeout(() => {
 	    newView.classList.remove("swipe-up-enter");
-	    newView.classList.add("active");
 	  }, 400); // match entrance animation
 	}
 
@@ -748,9 +754,10 @@
 	      redistributeResult.innerHTML = "";
 	    }
 
-	  // Remove all back buttons on view reset
-	  document.querySelectorAll(".back-button").forEach(btn => btn.remove());
-	}
+	// Remove only dynamically injected back buttons inside subviews
+	document.querySelectorAll(
+	  "#timeSlotsContainer .back-button, #appointmentFormContainer .back-button"
+	).forEach(btn => btn.remove());
 
 	function searchAgents() {
 	  const zip = document.getElementById("zipInput").value.trim();
@@ -1100,11 +1107,13 @@
 	  }
 	}
 	function renderGroupAvailabilityCalendar() {
-	  // Hide all other subviews before showing the calendar
+	  // Switch to the proper parent view first
+	  showView("redistributeView");
+	
+	  // Hide only subviews/partials — NOT top-level views like #zipSearchView
 	  [
 	    "apptSetterOptions",
 	    "helpMeFindForm",
-	    "zipSearchView",
 	    "calendarLoading",
 	    "timeSlotsContainer",
 	    "appointmentFormContainer"
@@ -1112,7 +1121,7 @@
 	    const el = document.getElementById(id);
 	    if (el) el.classList.add("hidden");
 	  });
-	  showView("redistributeView");
+
 
 	  const container = document.getElementById("calendarContainer");
 	  container.classList.remove("hidden");
