@@ -622,35 +622,7 @@
 	    }, 300); // match exit animation duration
 	  }
 	
-		// Only clear sub-views that belong to the target view
-		const subviewsByParent = {
-		  redistributeView: [
-		    "calendarLoading",
-		    "calendarContainer",
-		    "timeSlotsContainer",
-		    "appointmentFormContainer",
-		    "redistributeLoading",
-		    "redistributeResult"
-		  ],
-		  agentsView: [
-		    "agentsLoading",
-		    "agentsTableContainer"
-		  ],
-		  zipSearchView: [
-		    "helpMeFindForm" // don't touch apptSetterOptions here
-		  ],
-		  // intentionally omit confirmationContainer so it doesn't get wiped
-		};
-		
-		(const subIds = subviewsByParent[viewId] || []);
-		subIds.forEach(id => {
-		  const el = document.getElementById(id);
-		  if (!el) return;
-		  el.classList.add("hidden");
-		  if (["agentsTableContainer","calendarContainer","timeSlotsContainer","appointmentFormContainer","redistributeResult"].includes(id)) {
-		    el.innerHTML = "";
-		  }
-		});
+	// Removed entire hide subViewsBlock
 	
 	// Activate the requested view
 	const newView = document.getElementById(viewId);
